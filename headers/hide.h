@@ -1,7 +1,7 @@
 #ifndef _HIDE_H_
 #define _HIDE_H_
 
-#include "structs.h"
+#include <structs.h>
 
 int hide(Parameters parameters);
 void hide_lsb1();

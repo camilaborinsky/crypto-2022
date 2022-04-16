@@ -1,5 +1,5 @@
-#include "reveal.h"
-#include "structs.h"
+#include <reveal.h>
+#include <structs.h>
 #include <string.h>
 #include <stdio.h>
 

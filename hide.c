@@ -1,5 +1,5 @@
-#include "hide.h"
-#include "structs.h"
+#include <hide.h>
+#include <structs.h>
 
 int hide(Parameters params){
     // Check that bmp file is indeed bmp looking at extension. Check no double extension (.bmp.txt)

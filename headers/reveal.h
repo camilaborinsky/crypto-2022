@@ -1,7 +1,7 @@
 #ifndef _REVEAL_H_
 #define _REVEAL_H_
 
-#include "structs.h"
+#include <structs.h>
 #include <stdio.h>
 
 int reveal(Parameters parameters);
