@@ -4,22 +4,34 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef struct 
-{
-    uint32_t* header;
-    uint32_t* body;
-    uint32_t* current_byte;
+#define FILE_EXTENSION_LENGTH 8
+
+typedef struct {
+    FILE* file;
+    uint8_t* header;
+    uint8_t* body;
+    uint8_t* current_byte;
+    uint32_t size;  //Not counting header, actual size we can work with (in bytes)
 } BMPFile;
 
-typedef void (*steg_function)();
+typedef struct {
+    FILE* file;
+    char extension[FILE_EXTENSION_LENGTH];     // eg. '.png\0'
+    uint8_t* body;
+    uint32_t size;
+} PayloadFile;
+/* To get size
+fseek(file, 0, SEEK_END);
+bmp_file.size = ftell(file);
+fseek(file, 0, SEEK_SET);
+*/
 
-typedef struct 
-{
+typedef struct {
     int hide;           // 1 if hiding, 0 if revealing
-    FILE* in_file;       // file we are hiding
-    FILE* bmp_file;
+    PayloadFile payload;       // file we are hiding
+    BMPFile bmp;
     FILE* out_file;
-    steg_function steg;
+    char* steg;         // Maybe make func ptr but thing is hide and reveal stegs probably receive different params
     char* enc_alg;
     char* enc_mode;
     char* password;
