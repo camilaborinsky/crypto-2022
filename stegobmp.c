@@ -65,7 +65,7 @@ Parameters parse_arguments(int argc, char *argv[]){
                 break;
 
             case 'p':
-                params.bmp_file = optarg;
+                // params.bmp = optarg;
                 break;
 
             case 'o':
@@ -73,7 +73,7 @@ Parameters parse_arguments(int argc, char *argv[]){
                 break;
 
             case 'i':
-                params.in_file = optarg;
+                // params.payload = optarg;
                 break;
 
             case 's':
