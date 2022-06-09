@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
 
     int return_value = 0;
 
-    if (params->hide == 1)
-        return_value = hide(*params);
-    else
-        return_value = reveal(*params);
+    // if (params->hide == 1)
+    //     return_value = hide(*params);
+    // else
+    //     return_value = reveal(*params);
 
     free_params(params);
     return return_value;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 Parameters * parse_arguments(int argc, char *argv[]){
     Parameters * params = malloc(sizeof(Parameters));
-    char* opts = "xepoisamk";
+    char* opts = "xep:o:i:s:a:m:k:";
     int c;
     static struct option long_options[] =
         {
@@ -53,7 +53,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
         switch (c)
             {
         
-            case 0:
+            case 0:{
                 /* If this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
                 break;
@@ -61,7 +61,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
                 if (optarg)
                 printf (" with arg %s", optarg);
                 printf ("\n");
-                break;
+            }break;
 
             case 'x':
                 params->hide = 0;
@@ -71,13 +71,9 @@ Parameters * parse_arguments(int argc, char *argv[]){
                 params->hide = 1;
                 break;
 
-            case 'p':
-                printf("\nBuena suerte\n");
-                //puts(optarg);
-                printf("Here are first 10 chars only: %.10s\n", optarg);
-                printf("\nVolvimos\n");
+            case 'p':{
                 params->bmp = get_bmp_from_path(optarg);
-                break;
+            }break;
 
             case 'o': ; // Semicolon to avoid label error
                 FILE* out_file = fopen(optarg, "w");
@@ -172,7 +168,8 @@ BMPFile * get_bmp_from_path(char* path){
 
     //set file size
     bmp->size = (bmp->header->file_size - bmp->header->data_offset);
-
+    printf("%d\n", bmp->size);
+    
     //set body pointer
     bmp->body = malloc( bmp-> size * sizeof(uint8_t));
     fread(bmp->body, 1, bmp-> size, bmp_file);
@@ -186,7 +183,9 @@ BMPFile * get_bmp_from_path(char* path){
 
 void free_params(Parameters * params){
     free(params->bmp->header);
+    free(params->bmp->body);
     free(params->bmp);
+    free(params->payload->body);
     free(params->payload);
     free(params);
 }
