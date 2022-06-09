@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 int reveal(Parameters parameters);
-void reveal_lsb1(char* decrypted_payload, FILE* out_file);
-void reveal_lsb4(char* decrypted_payload, FILE* out_file);
-void reveal_lsbi(char* decrypted_payload, FILE* out_file);
+void reveal_lsb1(BMPFile decrypted_bmp, FILE* out_file);
+void reveal_lsb4(BMPFile decrypted_bmp, FILE* out_file);
+void reveal_lsbi(BMPFile decrypted_bmp, FILE* out_file);
 
 #endif

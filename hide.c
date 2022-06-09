@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "hide.h"
-#include "structs.h"
+#include <hide.h>
+#include <structs.h>
 
 #define HIDE_BUFFER_SIZE 256
 #define FILE_SIZE_LENGTH 4
@@ -31,15 +31,15 @@ int hide(Parameters params){
 
     if (strcmp(stego_string, "lsb1") == 0){
         steg_function = hide_lsb1;
-        if (params.bmp.size / 8 < (params.payload.size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH)){
-            printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload.size*8);
+        if (params.bmp->size / 8 < (params.payload->size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH)){
+            printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload->size*8);
             return -1;
         }
     }
     else if (strcmp(stego_string, "lsb4") == 0){
         steg_function = hide_lsb4;
-        if (params.bmp.size / 2 < (params.payload.size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH)){
-            printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload.size*2);
+        if (params.bmp->size / 2 < (params.payload->size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH)){
+            printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload->size*2);
             return -1;
         }
     }
@@ -59,7 +59,7 @@ int hide(Parameters params){
     // steganograph: file_size || file || ".extension\0"
 
     // Hide the data [ file_size || file || ".extension\0" ] == [ 32 | m_size | 56(., 5 chars and 0) ]
-    steg_function(params.bmp, params.payload, params.out_file);
+    steg_function(*params.bmp, *params.payload, params.out_file);
     return 0;
 }
 
