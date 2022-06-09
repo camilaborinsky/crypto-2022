@@ -3,6 +3,6 @@
 
 #include <structs.h>
 
-Parameters parse_arguments(int argc, char const *argv[]);
+Parameters parse_arguments(int argc, char *argv[]);
 
 #endif
