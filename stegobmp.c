@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #define FILE_EXTENSION_LENGTH 8
+#define HEADER_SIZE 54
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     Parameters* params = parse_arguments(argc, argv);
 
     printf("BMP file : %d\n", params->bmp->size);
-    printf("Payload file : %d\n", params->bmp->size);
+    printf("Payload file : %d\n", params->payload->size);
 
     int return_value = 0;
 
@@ -122,7 +123,7 @@ PayloadFile * get_payload_from_path(char* path){
     }
     payload_struct->file = payload_file;
     
-    char* ext = get_filename_ext(path);
+    const char* ext = get_filename_ext(path);
     if (strlen(ext) > FILE_EXTENSION_LENGTH){
         printf("Payload extension length too long, should be less than %d", FILE_EXTENSION_LENGTH);
         exit(1);
@@ -130,8 +131,14 @@ PayloadFile * get_payload_from_path(char* path){
     strcpy(payload_struct->extension, ext);
     
     // Get size
-    fseek(payload_file, 0, SEEK_END);
-    payload_struct->size = ftell(payload_file);
+    if (fseek(payload_file, 0, SEEK_END) != 0){
+        printf("Error in fseek");
+    }
+    long ftell_result = ftell(payload_file);
+    if (ftell_result == -1){
+        printf("Error in ftell\n");
+    }
+    payload_struct->size = ftell_result;
     fseek(payload_file, 0, SEEK_SET);
 
     /*
@@ -164,11 +171,19 @@ BMPFile * get_bmp_from_path(char* path){
 
     //set header pointer
     bmp->header = malloc(sizeof(BMPHeader));
-    fread(bmp->header, sizeof(BMPHeader), 1, bmp_file);
+    fread(bmp->header, sizeof(BMPHeader), 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
 
-    //set file size
-    bmp->size = (bmp->header->file_size - bmp->header->data_offset);
-    printf("%d\n", bmp->size);
+    // Get size
+    if (fseek(bmp_file, 0, SEEK_END) != 0){
+        printf("Error in fseek");
+    }
+    long ftell_result = ftell(bmp_file);
+    if (ftell_result == -1){
+        printf("Error in ftell\n");
+    }
+    bmp->size = ftell_result - HEADER_SIZE;
+    fseek(bmp_file, 0, SEEK_SET);
+    printf("BMP size is: %d\n", bmp->size);
     
     //set body pointer
     bmp->body = malloc( bmp-> size * sizeof(uint8_t));
