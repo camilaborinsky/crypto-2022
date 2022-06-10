@@ -49,7 +49,7 @@ int hide(Parameters params){
     }
     else {
         printf("stego parameter not supported. Use lsb1, lsb4 or lsbi\n");
-        return -1;
+        exit(1);
     }
 
     // Encrypt using openssl if encryption was requested
@@ -83,9 +83,17 @@ void fill_payload_size_str(uint8_t* p_size_string, uint32_t p_size){
 
 
 void hide_lsb1(BMPFile bmp, PayloadFile payload, FILE* out_file){
-    // on each block replace least significant bit with message bit
-    
-    // out_file opened in append mode!!
+    // On each block replace least significant bit with message bit
+
+
+    size_t header_size;
+    // Copy original BMP Header
+    if ((header_size = fwrite( bmp.header, 1, 54,out_file)) < 0){
+        printf("Error writing original BMP header to out file\n");
+        exit(-1);
+    }
+    /*
+    printf("Header copied size (fprintf result): %ld\n", header_size);
 
     uint8_t mask = 0x01;
     uint8_t new_byte;
@@ -97,15 +105,22 @@ void hide_lsb1(BMPFile bmp, PayloadFile payload, FILE* out_file){
     fill_payload_size_str(p_size_string, payload.size);
 
     uint8_t* byte_to_hide = p_size_string;
+    printf("About to start for: will iterate until i = %d\n", (payload.size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH) * 8);
+    printf("Hiding payload size\n");
     // Hide payload body
-    for (int i=0; i < payload.size * 8 + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH; i++){
+    for (int i=0; i < (payload.size + FILE_SIZE_LENGTH + FILE_EXTENSION_LENGTH) * 8; i++){
         uint8_t bit_to_add = (*(byte_to_hide) >> (7 - i % 8)) & mask;       // 0x00 or 0x01
+        // printf("i===%d\n", i);
         if (i % 8 == 0 && i != 0){     // Advance pointer if all bits were already concealed
             byte_to_hide++;
-            if (i == FILE_SIZE_LENGTH)
+            if (i == FILE_SIZE_LENGTH * 8){
                 byte_to_hide = payload.body;    // Done hiding payload size, now hide body
-            else if (i == FILE_SIZE_LENGTH + payload.size * 8)
+                printf("Hiding payload body\n");
+            }
+            else if (i == (FILE_SIZE_LENGTH + payload.size) * 8){
                 byte_to_hide = (uint8_t*) payload.extension;    // Done hiding payload body, now hide extension
+                printf("Hiding payload extension\n");
+            }
         }
 
         if (bit_to_add == 0x00)
@@ -124,26 +139,35 @@ void hide_lsb1(BMPFile bmp, PayloadFile payload, FILE* out_file){
                 printf("Error writing to out file\n");
                 exit(-1);
             }
+            printf("Just wrote to out_file, buffer's contents were: %s\n", hide_buffer);
             buff_pos = 0;
         }
     }
 
-    // Write remainder to out file
+    // Write remainder in hide_buffer to out file
     if (buff_pos != 0){
         hide_buffer[buff_pos++] = 0;
         if (fprintf(out_file, "%s", hide_buffer) < 0){
-            printf("Error writing to out file\n");
+            printf("Error writing remainder of hide_buffer to out file\n");
             exit(-1);
         }
+        printf("Just wrote hide_buffer remainder to out_file, buffer's contents were: %s\n", hide_buffer);
     }
-    
+    */
+
+    // Write remainder of original bmp to out file
+    if(fwrite(bmp.current_byte, 1, bmp.size, out_file) < 0){
+    // if (fprintf(out_file, "%s", bmp.current_byte) < 0){
+        printf("Error writing remainder of bmp to out file\n");
+        exit(-1);
+    }
+    printf("Just wrote remainder of bmp to out_file, contents were: %s\n", bmp.current_byte);
 }
 
 
 void hide_lsb4(BMPFile bmp, PayloadFile payload, FILE* out_file){
-    // on each block replace 4 least significant bits with message bits
-    
-    // out_file opened in append mode!!
+    // On each block replace 4 least significant bits with message bits
+
 
     uint8_t mask = 0x0F;
     uint8_t new_byte;
@@ -160,9 +184,9 @@ void hide_lsb4(BMPFile bmp, PayloadFile payload, FILE* out_file){
         uint8_t bits_to_add = (*(byte_to_hide) >> (4 - 4 * (i % 2))) & mask;       // 0x00 through 0x0F
         if (i % 2 == 0 && i != 0){     // Advance pointer if all bits were already concealed
             byte_to_hide++;
-            if (i == FILE_SIZE_LENGTH)
+            if (i == FILE_SIZE_LENGTH * 2)
                 byte_to_hide = payload.body;    // Done hiding payload size, now hide body
-            else if (i == FILE_SIZE_LENGTH + payload.size * 2)
+            else if (i == (FILE_SIZE_LENGTH + payload.size) * 2)
                 byte_to_hide = (uint8_t*) payload.extension;    // Done hiding payload body, now hide extension
         }
 
@@ -192,6 +216,11 @@ void hide_lsb4(BMPFile bmp, PayloadFile payload, FILE* out_file){
         }
     }
     
+    // Write remainder of original bmp to out file
+    if (fprintf(out_file, "%s", bmp.current_byte) < 0){
+        printf("Error writing remainder of bmp to out file\n");
+        exit(-1);
+    }
 }
 
 

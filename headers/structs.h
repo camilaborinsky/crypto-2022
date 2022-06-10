@@ -34,7 +34,7 @@ typedef struct {
     char * buffer;
     uint32_t complete_size;
     */
-    BMPHeader * header;
+    uint8_t* header;
     uint8_t* body;
     uint8_t* current_byte;
     uint32_t size;  //Not counting header, actual size we can work with (in bytes)

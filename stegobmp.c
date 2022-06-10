@@ -22,10 +22,10 @@ int main(int argc, char *argv[])
 
     int return_value = 0;
 
-    // if (params->hide == 1)
-    //     return_value = hide(*params);
-    // else
-    //     return_value = reveal(*params);
+    if (params->hide == 1)
+        return_value = hide(*params);
+    else
+        return_value = reveal(*params);
 
     free_params(params);
     return return_value;
@@ -150,7 +150,7 @@ PayloadFile * get_payload_from_path(char* path){
     payload_struct->size = ftell_result;
     fseek(payload_file, 0, SEEK_SET);
 
-    //set body pointer
+    // Set body pointer
     payload_struct->body = malloc( payload_struct-> size +1);
     if(payload_struct->body == NULL){
         printf("Malloc error\n");
@@ -179,13 +179,13 @@ BMPFile * get_bmp_from_path(char* path){
     bmp->file = bmp_file;
 
     // Set header pointer
-    bmp->header = malloc(sizeof(BMPHeader));
+    bmp->header = malloc(HEADER_SIZE + 1);
     if (bmp->header == NULL){
         printf("Malloc error\n");
         exit(1);
     }
-    fread(bmp->header, sizeof(BMPHeader), 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
-
+    fread(bmp->header, HEADER_SIZE, 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
+    bmp->header[HEADER_SIZE] = 0;
     // Get size
     if (fseek(bmp_file, 0, SEEK_END) != 0){
         printf("Error in fseek");
@@ -197,7 +197,7 @@ BMPFile * get_bmp_from_path(char* path){
     bmp->size = ftell_result - HEADER_SIZE;
     fseek(bmp_file, 0, SEEK_SET);
     
-    //set body pointer
+    // Set body pointer
     bmp->body = malloc( bmp-> size +1);
     if (bmp->body == NULL){
         printf("Malloc error\n");
@@ -207,7 +207,7 @@ BMPFile * get_bmp_from_path(char* path){
     fread(bmp->body, 1, bmp-> size, bmp_file);
     bmp->body[bmp->size] = 0;
     
-    //set current byte pointer to initial position
+    // Set current byte pointer to initial position
     bmp->current_byte = bmp->body;
     fclose(bmp_file);
     return bmp;
@@ -220,6 +220,7 @@ void free_params(Parameters * params){
     free(params->bmp);
     free(params->payload->body);
     free(params->payload);
+    fclose(params->out_file);
     free(params);
 }
 
