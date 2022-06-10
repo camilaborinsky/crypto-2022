@@ -33,6 +33,10 @@ int main(int argc, char *argv[])
 
 Parameters * parse_arguments(int argc, char *argv[]){
     Parameters * params = malloc(sizeof(Parameters));
+    if (params == NULL){
+        printf("Malloc error\n");
+        exit(1);
+    }
     char* opts = "xep:o:i:s:a:m:k:";
     int c;
     static struct option long_options[] =
@@ -115,6 +119,10 @@ Parameters * parse_arguments(int argc, char *argv[]){
 
 PayloadFile * get_payload_from_path(char* path){
     PayloadFile * payload_struct = malloc(sizeof(PayloadFile));
+    if(payload_struct == NULL){
+        printf("Malloc error\n");
+        exit(1);
+    }
 
     FILE* payload_file = fopen(path, "r");
     if (payload_file == NULL){
@@ -129,6 +137,7 @@ PayloadFile * get_payload_from_path(char* path){
         exit(1);
     }
     strcpy(payload_struct->extension, ext);
+    printf("Payload extension: %s\n", payload_struct->extension);
     
     // Get size
     if (fseek(payload_file, 0, SEEK_END) != 0){
@@ -141,18 +150,14 @@ PayloadFile * get_payload_from_path(char* path){
     payload_struct->size = ftell_result;
     fseek(payload_file, 0, SEEK_SET);
 
-    /*
-    // Read file and get pointer to start
-    int bytes_read = fscanf(payload_file, "%s", payload_struct->body);
-    if (bytes_read != payload_struct->size){
-        printf("Error on payload parse. N° of bytes read by fscanf dont match file size");
+    //set body pointer
+    payload_struct->body = malloc( payload_struct-> size +1);
+    if(payload_struct->body == NULL){
+        printf("Malloc error\n");
         exit(1);
     }
-    */
-
-    //set body pointer
-    payload_struct->body = malloc( payload_struct-> size * sizeof(uint8_t));
     fread(payload_struct->body, 1, payload_struct-> size, payload_file);
+    payload_struct->body[payload_struct->size] = 0;
 
     fclose(payload_file);
     
@@ -161,7 +166,11 @@ PayloadFile * get_payload_from_path(char* path){
 
 BMPFile * get_bmp_from_path(char* path){
     BMPFile * bmp = malloc(sizeof(BMPFile));
-    printf("%s\n", path);
+    if(bmp == NULL){
+        printf("Malloc error\n");
+        exit(1);
+    }
+    
     FILE* bmp_file = fopen(path, "r");
     if(bmp_file == NULL ){
         printf("Error opening bmp file");
@@ -169,8 +178,12 @@ BMPFile * get_bmp_from_path(char* path){
     }
     bmp->file = bmp_file;
 
-    //set header pointer
+    // Set header pointer
     bmp->header = malloc(sizeof(BMPHeader));
+    if (bmp->header == NULL){
+        printf("Malloc error\n");
+        exit(1);
+    }
     fread(bmp->header, sizeof(BMPHeader), 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
 
     // Get size
@@ -183,11 +196,16 @@ BMPFile * get_bmp_from_path(char* path){
     }
     bmp->size = ftell_result - HEADER_SIZE;
     fseek(bmp_file, 0, SEEK_SET);
-    printf("BMP size is: %d\n", bmp->size);
     
     //set body pointer
-    bmp->body = malloc( bmp-> size * sizeof(uint8_t));
+    bmp->body = malloc( bmp-> size +1);
+    if (bmp->body == NULL){
+        printf("Malloc error\n");
+        exit(1);
+    }
+    fseek(bmp_file, HEADER_SIZE, SEEK_SET);
     fread(bmp->body, 1, bmp-> size, bmp_file);
+    bmp->body[bmp->size] = 0;
     
     //set current byte pointer to initial position
     bmp->current_byte = bmp->body;
