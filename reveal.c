@@ -189,24 +189,24 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n){
     // Parse file size with lsbi
     for(int i = 0; i < FILE_SIZE_LENGTH * 8; i++){
         uint8_t bit_to_reveal = *curr_byte & mask;
-        curr_byte += 1;
-        if(patterns[(bit_to_reveal & pattern_mask)>>1] == 0x01){
+        if(patterns[(*curr_byte & pattern_mask)>>1] == 0x01){
             bit_to_reveal ^= mask;
         }
+        curr_byte += 1;
         real_size = real_size << 1;
         real_size = real_size | bit_to_reveal;
     }
-
+    printf("Real size %d\n", real_size);
     // Parse file content with lsbi
-       for(int i = 0; i < real_size*8 ; i++){ //TODO chequear
+    for(int i = 0; i < real_size*8 ; i++){ 
         uint8_t bit_to_reveal = *curr_byte & mask;
-        curr_byte += 1;
-        if(patterns[(bit_to_reveal & pattern_mask)>>1] == 0x01){
+        if(patterns[(*curr_byte & pattern_mask)>>1] == 0x01){
             bit_to_reveal ^= mask;
         }
+        curr_byte += 1;
         rebuilding_byte = rebuilding_byte << 1;
         rebuilding_byte = rebuilding_byte | bit_to_reveal;
-        if (i % 8 == 7 && i != 0){
+        if (i % 8 == 7){
             // Write to buffer
             out_block[out_buff_pos%REVEAL_BUFFER_SIZE] = rebuilding_byte;
             out_buff_pos++;
@@ -229,10 +229,10 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n){
     int finished = 0;
     for(int i = 0; !finished ; i++){
         uint8_t bit_to_reveal = *curr_byte & mask;
-        curr_byte += 1;
-        if(patterns[(bit_to_reveal & pattern_mask)>>1] == 0x01){
+        if(patterns[(*curr_byte & pattern_mask)>>1] == 0x01){
             bit_to_reveal ^= mask;
         }
+        curr_byte += 1;
         rebuilding_byte = rebuilding_byte << 1;
         rebuilding_byte = rebuilding_byte | bit_to_reveal;
 

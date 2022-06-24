@@ -14,7 +14,6 @@
 int main(int argc, char *argv[])
 {
     // Read arguments
-    printf("%d\n", argc);
     Parameters* params = parse_arguments(argc, argv);
 
     printf("BMP file : %d\n", params->bmp->size);

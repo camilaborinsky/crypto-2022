@@ -18,3 +18,10 @@ Son válidas en cambio las siguientes opciones:
 
 make clean && make all
 ./steg -x -p resources/ladoLSB1.bmp -o resources/out_reveal_4 -s lsb1
+./steg -e -p resources/lado.bmp -o resources/embed.bmp -i resources/out_reveal_1.png -s lsb1
+
+<!-- ./steg -x -p resources/ladoLSB1.bmp -o resources/out_reveal_4 -s lsb1 -->
+
+./steg -e -p resources/lado.bmp -o resources/embed_4.bmp -i resources/out_reveal_1.png -s lsb4
+
+./steg -e -p resources/lado.bmp -o resources/embed_i.bmp -i resources/out_reveal_i.png -s lsbi

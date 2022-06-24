@@ -4,8 +4,8 @@
 #include <structs.h>
 
 int hide(Parameters parameters);
-void hide_lsb1();
-void hide_lsb4();
-void hide_lsbi();
+void hide_lsb1(BMPFile bmp, PayloadFile payload, FILE* out_file);
+void hide_lsb4(BMPFile bmp, PayloadFile payload, FILE* out_file);
+void hide_lsbi(BMPFile bmp, PayloadFile payload, FILE* out_file);
 
 #endif
