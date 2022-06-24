@@ -55,6 +55,7 @@ typedef struct {
     PayloadFile* payload;       // file we are hiding
     BMPFile* bmp;
     FILE* out_file;
+    char* out_file_name;
     char* steg;         // Maybe make func ptr but thing is hide and reveal stegs probably receive different params 
     char* enc_alg;
     char* enc_mode;

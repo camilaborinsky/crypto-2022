@@ -21,37 +21,38 @@ static const EVP_CIPHER* get_cipher(
 
 
 static int encrypt_decrypt(
-    const u_int8_t* in, 
-    const u_int in_size, 
-    const u_int8_t* password, 
+    const uint8_t* in, 
+    const uint32_t in_size, 
+    const uint8_t* password, 
     enum crypto_algorithm algorithm, 
     enum crypto_block_algorithm block_chaining_type,
-    u_int8_t* out,
-    u_int* out_size,
+    uint8_t* out,
+    uint32_t* out_size,
     int mode
 ){
-    u_int8_t* k;
-    u_int8_t* iv;
-    u_int out_final_size, out_temporary_size;
-    EVP_CIPHER_CTX context;
-
-    //Map encryption algorithm enum to special library type
+    uint8_t* k;
+    uint8_t* iv;
+    uint32_t out_final_size, out_temporary_size;
+    EVP_CIPHER_CTX* context;
+    context = EVP_CIPHER_CTX_new();
+    
+    // Map encryption algorithm enum to special library type
     const EVP_CIPHER* cipher = get_cipher(algorithm, block_chaining_type);
 
     // Allocate space for key and iv
-    k = malloc(sizeof(u_int8_t*)*EVP_CIPHER_key_length(cipher));
-    iv = malloc(sizeof(u_int8_t*)*EVP_CIPHER_iv_length(cipher));
+    k = malloc(sizeof(uint8_t*)*EVP_CIPHER_key_length(cipher));
+    iv = malloc(sizeof(uint8_t*)*EVP_CIPHER_iv_length(cipher));
 
     // Initialize key and iv
-    EVP_BytesToKey(cipher, EVP_md5(), NULL, password, strlen(password), cipher, 1, k, iv);
+    EVP_BytesToKey(cipher, EVP_md5(), NULL, password, strlen(password), 1, k, iv);
 
-    // Initialize context
-    EVP_CIPHER_CTX_init(&context);
+    // // Initialize context
+    // EVP_CIPHER_CTX_init(context);
 
     // Encrypt/Decrypt
-    EVP_CypherInit_ex(&context, cipher, NULL, k, iv, mode);
-    EVP_CipherUpdate(&context, out, &out_temporary_size, in, in_size);
-    EVP_CipherFinal(&context, out+out_temporary_size, &out_final_size);
+    // EVP_CypherInit_ex(context, cipher, NULL, k, iv, mode);
+    EVP_CipherUpdate(context, out, &out_temporary_size, in, in_size);
+    EVP_CipherFinal(context, out+out_temporary_size, &out_final_size);
 
     *out_size = out_temporary_size + out_final_size;
 
@@ -60,7 +61,7 @@ static int encrypt_decrypt(
     free(iv);
 
     // Clean context
-    EVP_CIPHER_CTX_cleanup(&context);
+    EVP_CIPHER_CTX_cleanup(context);
 
     return 0;
 }

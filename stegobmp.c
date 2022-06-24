@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     Parameters* params = parse_arguments(argc, argv);
 
     printf("BMP file : %d\n", params->bmp->size);
-    printf("Payload file : %d\n", params->payload->size);
+    //printf("Payload file : %d\n", params->payload->size);
 
     int return_value = 0;
 
@@ -86,6 +86,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
                      printf("Error opening out_file");
                      exit(1);
                 }
+                params-> out_file_name = optarg;
                 params->out_file = out_file;
                 break;
 
@@ -186,6 +187,8 @@ BMPFile * get_bmp_from_path(char* path){
     }
     fread(bmp->header, HEADER_SIZE, 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
     bmp->header[HEADER_SIZE] = 0;
+    // TODO: Check that bmp is not compressed, if it is then exit
+
     // Get size
     if (fseek(bmp_file, 0, SEEK_END) != 0){
         printf("Error in fseek");
@@ -218,9 +221,12 @@ void free_params(Parameters * params){
     free(params->bmp->header);
     free(params->bmp->body);
     free(params->bmp);
-    free(params->payload->body);
-    free(params->payload);
-    fclose(params->out_file);
+    if (params->hide){
+        free(params->payload->body);
+        free(params->payload);
+    } else {
+        fclose(params->out_file);
+    }
     free(params);
 }
 

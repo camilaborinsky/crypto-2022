@@ -15,3 +15,6 @@ Son válidas en cambio las siguientes opciones:
 - indicar algoritmo y password pero no modo: Se asume CBC por default.
 - Indicar modo y password pero no algoritmo: Se asume aes128 por default.
 - Indicar sólo password: Se asume algoritmo aes128 en modo CBC por default. \
+
+make clean && make all
+./steg -x -p resources/ladoLSB1.bmp -o resources/out_reveal -s lsb1

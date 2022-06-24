@@ -1,5 +1,5 @@
 CFLAGS=-std=c99 -Wall -g -pedantic
-LDFLAGS=-fsanitize=address
+LDFLAGS=-fsanitize=address -lcrypto -lssl
 SOURCES := $(shell find $(SOURCEDIR) -name '*.c')
 HEADERS  := $(shell find $(SOURCEDIR) -name '*.h')
 OBJECTS=$(SOURCES:.c=.o)
