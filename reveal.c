@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cryptography.h>
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -25,24 +26,8 @@ char extension[FILE_EXTENSION_LENGTH];
 
 int reveal(Parameters params){
 
-    // Decrpyt if data is encrypted using openssl
-    // char* decrypted_payload;
-
-    // char * stego_string = params.steg;
-    // if (strcmp(stego_string, "lsb1") == 0)
-    //     reveal_lsb1(decrypted_payload, params.out_file);
-    // else if (strcmp(stego_string, "lsb4") == 0)
-    //     reveal_lsb4(decrypted_payload, params.out_file);
-    // else if (strcmp(stego_string, "lsbi") == 0)
-    //     reveal_lsbi(decrypted_payload, params.out_file);
-    // else {
-    //     printf("stego parameter not supported. Use lsb1, lsb4 or lsbi\n");
-    //     return -1;
-    // }
-    // return 0;
-
     char * stego_string = params.steg;
-    void (*steg_function)(BMPFile bmp_file, FILE* out_file, int n);
+    void (*steg_function)(BMPFile bmp_file, FILE* out_file, int n, int encrypted);
     int n;
     if (strcmp(stego_string, "lsb1") == 0){
         steg_function = reveal_lsbn;
@@ -57,25 +42,36 @@ int reveal(Parameters params){
         printf("stego parameter not supported. Use lsb1, lsb4 or lsbi\n");
         return -1;
     }
+    
+    int encrypted = 0;
+    FILE * encrypted_file;
+    if (params.enc_alg != NULL){
+        encrypted = 1;
+        encrypted_file = fopen("encrypted_file", "w");
+        if (encrypted_file == NULL){
+            printf("Error opening out_file");
+            exit(1);
+        }
+    }
 
-    // Encrypt using openssl if encryption was requested
-
-    // If encrpytion was requested, check that bmp file is long enough for new payload to fit
-
-    // steganograph: file_size || file || ".extension\0"
-
-    // Hide the data [ file_size || file || ".extension\0" ] == [ 32 | m_size | 56(., 5 chars and 0) ]
-    steg_function(*params.bmp, params.out_file, n);
-    int new_file_name_size = strlen(params.out_file_name)+strlen(extension) +1;
-    char new_file_name [new_file_name_size];
-    strcpy(new_file_name, params.out_file_name);
-    strcat(new_file_name, extension);
-    new_file_name[new_file_name_size-1] = 0;
-    rename(params.out_file_name, new_file_name);
+    if (encrypted){
+        steg_function(*params.bmp, encrypted_file, n, encrypted);
+        decrypt(encrypted_file, params);
+        fclose(encrypted_file);
+    } else {
+        steg_function(*params.bmp, params.out_file, n, encrypted);
+        int new_file_name_size = strlen(params.out_file_name)+strlen(extension) +1;
+        char new_file_name [new_file_name_size];
+        strcpy(new_file_name, params.out_file_name);
+        strcat(new_file_name, extension);
+        new_file_name[new_file_name_size-1] = 0;
+        rename(params.out_file_name, new_file_name);
+    }
+    
     return 0;
 }
 
-void reveal_lsbn(BMPFile bmp, FILE* out_file, int n){ 
+void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){ 
     printf("Inside reveal lsbn\n");
     uint8_t mask;
     uint8_t* curr_byte = bmp.body;
@@ -145,7 +141,7 @@ void reveal_lsbn(BMPFile bmp, FILE* out_file, int n){
     
     // Reading file extension
     int finished = 0;
-    for(int i = 0; !finished ; i++){
+    for(int i = 0; !finished && !encrypted ; i++){
         uint8_t bit_to_reveal = *curr_byte & mask;
         curr_byte += 1;
 
@@ -168,7 +164,7 @@ void reveal_lsbn(BMPFile bmp, FILE* out_file, int n){
 }
 
 
-void reveal_lsbi(BMPFile bmp, FILE* out_file, int n){
+void reveal_lsbi(BMPFile bmp, FILE* out_file, int n, int encrypted){
     uint8_t mask = 0x01;
     uint8_t pattern_mask = 0x06;
     uint8_t* curr_byte = bmp.body;
@@ -227,7 +223,7 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n){
     
     // Reading file extension
     int finished = 0;
-    for(int i = 0; !finished ; i++){
+    for(int i = 0; !finished && !encrypted; i++){
         uint8_t bit_to_reveal = *curr_byte & mask;
         if(patterns[(*curr_byte & pattern_mask)>>1] == 0x01){
             bit_to_reveal ^= mask;

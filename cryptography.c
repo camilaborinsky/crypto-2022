@@ -1,8 +1,20 @@
-#include <openssl/evp.h>
 #include <cryptography.h>
 #include <string.h>
 
+const char* cryptographic_algorithm_names[ENCRYPTION_ALGORITHMS_NUMBER] = {"aes-128-", "aes-192-", "aes-256-", "des-"};
+const int cryptographic_algorithm_name_size[ENCRYPTION_ALGORITHMS_NUMBER] = {9, 9, 9, 5};
 
+const char* block_chaining_type_names[BLOCK_CHAINING_TYPE_NUMBER] = {"ecb", "cfb", "ofb", "cbc"};
+const int block_chaining_type_name_size[BLOCK_CHAINING_TYPE_NUMBER] = {3, 3, 3, 3};
+
+void decrypt(FILE* encrypted_file, Parameters param){
+    // Levantar de archivo y poner en un buffer
+    // Calcular el size
+    // Crear buffer para poner el decrypted
+
+    
+    // encrypt_decrypt();
+}
 
 static const EVP_CIPHER* get_cipher(
     enum crypto_algorithm algorithm,
@@ -46,11 +58,8 @@ static int encrypt_decrypt(
     // Initialize key and iv
     EVP_BytesToKey(cipher, EVP_md5(), NULL, password, strlen(password), 1, k, iv);
 
-    // // Initialize context
-    // EVP_CIPHER_CTX_init(context);
-
     // Encrypt/Decrypt
-    // EVP_CypherInit_ex(context, cipher, NULL, k, iv, mode);
+    EVP_CipherInit_ex(context, cipher, NULL, k, iv, mode);
     EVP_CipherUpdate(context, out, &out_temporary_size, in, in_size);
     EVP_CipherFinal(context, out+out_temporary_size, &out_final_size);
 

@@ -5,6 +5,6 @@
 #include <stdio.h>
 
 int reveal(Parameters parameters);
-void reveal_lsbi(BMPFile decrypted_bmp, FILE* out_file, int n);
-void reveal_lsbn(BMPFile decrypted_bmp, FILE* out_file, int n);
+void reveal_lsbi(BMPFile decrypted_bmp, FILE* out_file, int n, int encrypted);
+void reveal_lsbn(BMPFile decrypted_bmp, FILE* out_file, int n, int encrypted);
 #endif
