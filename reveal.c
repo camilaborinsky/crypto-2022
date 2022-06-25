@@ -72,11 +72,8 @@ void separate_decrypted_data(char* decrypted_data, size_t decrypted_data_size, F
     for (int i=0; i < FILE_SIZE_LENGTH; i++){
         body_size = body_size << 8;
         body_size = body_size | (0x000000FF & *current_byte);
-        printf("Body size: %x\n", body_size);
         current_byte++;
     }
-    printf("Body size is: %d\n", body_size);
-    printf("Decrypted data size is: %ld\n", decrypted_data_size);
 
     // Get body
     int out_buff_pos = 0;
@@ -101,7 +98,6 @@ void separate_decrypted_data(char* decrypted_data, size_t decrypted_data_size, F
 
 
 void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){ 
-    printf("Inside reveal lsbn\n");
     uint8_t mask;
     uint8_t* curr_byte = bmp.body;
     uint8_t rebuilding_byte = 0x00;
@@ -138,8 +134,6 @@ void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){
         real_size = real_size | bit_to_reveal;
        
     }
-
-    printf("Real size: %d\n", real_size);
 
     
     // Reading hidden data and writing to outfile
@@ -221,7 +215,7 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n, int encrypted){
         real_size = real_size << 1;
         real_size = real_size | bit_to_reveal;
     }
-    printf("Real size %d\n", real_size);
+
     // Parse file content with lsbi
     for(int i = 0; i < real_size*8 ; i++){ 
         uint8_t bit_to_reveal = *curr_byte & mask;

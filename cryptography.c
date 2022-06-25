@@ -45,7 +45,6 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
     fread(encrypted_data, in_size, 1, encrypted_file);
     encrypted_data[in_size] = 0;
     printf("IN size %d\n", in_size);
-    printf("Encrypted data start: %.10x\n", encrypted_data);
 
 
 
@@ -74,7 +73,7 @@ enum crypto_block_algorithm get_block_algorithm(char * algorithm){
     }else if(strcmp(algorithm, "ecb")==0){
         return ECB;
     }else{
-        printf("Encryption mode not supported %s", algorithm);
+        printf("Encryption mode not supported %s\n", algorithm);
         exit(1);
     }
 }
@@ -89,7 +88,7 @@ enum crypto_algorithm get_encryption_algorithm(char * algorithm){
     }else if(strcmp(algorithm, "aes128")==0){
         return AES_128;
     }else{
-        printf("Encryption algorithm not supported %s", algorithm);
+        printf("Encryption algorithm not supported %s\n", algorithm);
         exit(1);
     }
 }
@@ -133,7 +132,6 @@ int encrypt_decrypt(
     }
     // Map encryption algorithm enum to special library type
     const EVP_CIPHER* cipher = get_cipher(algorithm, block_chaining_type);
-    printf("cipher: %s\n", EVP_CIPHER_name(cipher));
     if (cipher == NULL){
         printf("Cipher is null\n");
     }
@@ -158,11 +156,8 @@ int encrypt_decrypt(
     if(EVP_CipherUpdate(context, out, &out_temporary_size, in, in_size)==0){
         perror("Decryption error in update");
     }
-    printf("out temp size %d\n", out_temporary_size);
     int final_return;
     final_return = EVP_CipherFinal(context, out+out_temporary_size, &out_final_size);
-    printf("Decrypt returns: %d\n", final_return);
-    printf("out final size %d\n", out_final_size);
     if(final_return == 0){
         perror("Decryption error in final");
     }

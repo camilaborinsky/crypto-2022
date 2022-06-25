@@ -17,7 +17,6 @@ int main(int argc, char *argv[])
     Parameters* params = parse_arguments(argc, argv);
 
     printf("BMP file : %d\n", params->bmp->size);
-    //printf("Payload file : %d\n", params->payload->size);
 
     int return_value = 0;
 

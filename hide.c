@@ -31,13 +31,14 @@ int hide(Parameters params){
         // Get payload file size
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, params.payload->size);
-        printf("P size string: %s\n", p_size_string);
-        strncpy(data_to_encrypt, p_size_string, FILE_SIZE_LENGTH);
-        strncpy(data_to_encrypt + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
-        strcpy(data_to_encrypt + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);   
+
+        memcpy(data_to_encrypt, p_size_string, FILE_SIZE_LENGTH);
+        memcpy(data_to_encrypt + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
+        memcpy(data_to_encrypt + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension, strlen(params.payload->extension) + 1);   
 
         encrypted_data_size = encrypt(data_to_encrypt, FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension) + 1, params, encrypted_data);
     
+
         free(data_to_encrypt);
     }
     
@@ -48,19 +49,29 @@ int hide(Parameters params){
     char * stego_string = params.steg;
     void (*steg_function)(BMPFile bmp_file, char* payload, size_t payload_size, FILE* out_file);
     char * data_to_hide;
-    size_t payload_actual_size;
+    uint32_t payload_actual_size;
     if (params.encrypted) {
-        data_to_hide = encrypted_data;
-        payload_actual_size = encrypted_data_size;
+        data_to_hide = malloc(encrypted_data_size + FILE_SIZE_LENGTH);
+        if (data_to_hide == NULL){
+            printf("Malloc error\n");
+            exit(1);
+        }
+        payload_actual_size = encrypted_data_size + FILE_SIZE_LENGTH;
+        // Get encrypted adta size as 4 bytes
+        uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
+        fill_payload_size_str(p_size_string, encrypted_data_size);
+        memcpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
+        memcpy(data_to_hide + FILE_SIZE_LENGTH, encrypted_data, encrypted_data_size);
     } else {
         data_to_hide = malloc(DATA_BUFF_SIZE);
     
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, params.payload->size);
-        printf("P size string: %s\n", p_size_string);
-        strncpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
-        strncpy(data_to_hide + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
-        strcpy(data_to_hide + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);
+        
+        memcpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
+        memcpy(data_to_hide + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
+        memcpy(data_to_hide + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension, strlen(params.payload->extension) + 1);
+
 
         payload_actual_size = FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension) + 1;
     }
@@ -93,17 +104,16 @@ int hide(Parameters params){
 
     steg_function(*params.bmp, data_to_hide, payload_actual_size, params.out_file);
     free(data_to_hide);
-    // if (params.encrypted)
-    //     free(encrypted_data);
+    if (params.encrypted)
+        free(encrypted_data);
     return 0;
 }
 
 void fill_payload_size_str(uint8_t* p_size_string, uint32_t p_size){
     // Divide int into bytes
     for (int i = 0; i < FILE_SIZE_LENGTH; i++){
-        p_size_string[i] = (uint8_t) ((p_size >> (FILE_SIZE_LENGTH-i-1)*8) & 0xff);
+        p_size_string[i] = (uint8_t) ((p_size >> (FILE_SIZE_LENGTH-i-1)*8) & 0x000000ff);
     }
-
     p_size_string[FILE_SIZE_LENGTH] = 0;
     return;
 }
@@ -131,7 +141,6 @@ void hide_lsb1(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     // Hide payload body
     for (int i=0; i < (payload_size) * 8; i++){
         uint8_t bit_to_add = (*(byte_to_hide) >> (7 - i % 8)) & mask;       // 0x00 or 0x01
-        // printf("i===%d\n", i);
         if (i % 8 == 7){     // Advance pointer if all bits were already concealed
             byte_to_hide++;
         }
@@ -151,7 +160,6 @@ void hide_lsb1(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
                 printf("Error writing to out file\n");
                 exit(-1);
             }
-            //printf("Just wrote to out_file, buffer's contents were: %s\n", hide_buffer);
             buff_pos = 0;
         }
     }
@@ -167,7 +175,6 @@ void hide_lsb1(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     
     // Write remainder of original bmp as is
     if(fwrite(bmp.current_byte, bmp.size - (payload_size) * 8, 1, out_file) < 0){
-    // if (fprintf(out_file, "%s", bmp.current_byte) < 0){
         printf("Error writing remainder of bmp to out file\n");
         exit(-1);
     }
@@ -245,7 +252,6 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     size_t pattern_count[4][2] = {{0,0},{0,0},{0,0},{0,0}}; //00, 01, 10, 11 counts. [1] is same, [0] is inverted
     uint8_t pattern_mask = 0x06;
     uint8_t mask = 0x01;
-    // fill_payload_size_str(p_size_string, payload.size);
     
 
     uint8_t* byte_to_hide = payload;
@@ -290,17 +296,16 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
 
     for (int i=0; i < payload_size * 8; i++){
         bit_to_add = (*(byte_to_hide) >> (7 - i % 8)) & mask;       // 0x00 or 0x01
-        // printf("i===%d\n", i);
         if (i % 8 == 7){     // Advance pointer if all bits were already concealed
             byte_to_hide++;
         }
 
         bmp_pattern = *(bmp.current_byte) & pattern_mask >> 1;
-        // Si tengo un cero y lo dejo igual o tengo un uno y lo tengo que invertir
+        // If got 0 and shouldnt invert or got 1 and should invert
         if ((bit_to_add == 0x00 && !must_invert[bmp_pattern]) || (bit_to_add == 0x01 && must_invert[bmp_pattern]))
-            new_byte = *(bmp.current_byte) & (~mask); // bmp.current_byte & 1111 1110 => dejo cero
+            new_byte = *(bmp.current_byte) & (~mask); // bmp.current_byte & 1111 1110 => put 0
         else
-            new_byte = *(bmp.current_byte) | mask; // bmp.current_byte | 0000 0001 => dejo un uno
+            new_byte = *(bmp.current_byte) | mask; // bmp.current_byte | 0000 0001 => put 1
 
         bmp.current_byte++;
 
