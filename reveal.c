@@ -5,21 +5,11 @@
 #include <stdlib.h>
 #include <cryptography.h>
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  (byte & 0x80 ? '1' : '0'), \
-  (byte & 0x40 ? '1' : '0'), \
-  (byte & 0x20 ? '1' : '0'), \
-  (byte & 0x10 ? '1' : '0'), \
-  (byte & 0x08 ? '1' : '0'), \
-  (byte & 0x04 ? '1' : '0'), \
-  (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0') 
-
 #define REVEAL_BUFFER_SIZE 256
 #define FILE_SIZE_LENGTH 4
 #define LSBI_PATTERN_LENGTH 4
 #define FILE_EXTENSION_LENGTH 8
+#define DATA_BUFF_SIZE 1048576  // 1MB
 
 char out_block[REVEAL_BUFFER_SIZE];
 char extension[FILE_EXTENSION_LENGTH];
@@ -53,23 +43,67 @@ int reveal(Parameters params){
             exit(1);
         }
     }
-
+    
+    
     if (encrypted){
         steg_function(*params.bmp, encrypted_file, n, encrypted);
-        decrypt(encrypted_file, params);
+        char * decrypted_data = malloc(DATA_BUFF_SIZE);
+        if(decrypted_data == NULL){
+            printf("Malloc error\n");
+            exit(1);
+        }
+        int decrypted_data_size = decrypt(encrypted_file, params, decrypted_data);
         fclose(encrypted_file);
+        // Now separate file_size || body || extension
+        separate_decrypted_data(decrypted_data, decrypted_data_size, params.out_file);
     } else {
         steg_function(*params.bmp, params.out_file, n, encrypted);
-        int new_file_name_size = strlen(params.out_file_name)+strlen(extension) +1;
-        char new_file_name [new_file_name_size];
-        strcpy(new_file_name, params.out_file_name);
-        strcat(new_file_name, extension);
-        new_file_name[new_file_name_size-1] = 0;
-        rename(params.out_file_name, new_file_name);
     }
+    int new_file_name_size = strlen(params.out_file_name)+strlen(extension) +1;
+    char new_file_name [new_file_name_size];
+    strcpy(new_file_name, params.out_file_name);
+    strcat(new_file_name, extension);
+    new_file_name[new_file_name_size-1] = 0;
+    rename(params.out_file_name, new_file_name);
     
     return 0;
 }
+
+
+void separate_decrypted_data(char* decrypted_data, size_t decrypted_data_size, FILE* out_file){
+    char* current_byte = decrypted_data;
+    // Get size
+    uint32_t body_size = 0;
+    for (int i=0; i < FILE_SIZE_LENGTH; i++){
+        body_size = body_size << 8;
+        body_size = body_size | (0x000000FF & *current_byte);
+        printf("Body size: %x\n", body_size);
+        current_byte++;
+    }
+    printf("Body size is: %d\n", body_size);
+    printf("Decrypted data size is: %d\n", decrypted_data_size);
+
+    // Get body
+    int out_buff_pos = 0;
+    for (int i=0; i < body_size; i++){
+        out_block[out_buff_pos%REVEAL_BUFFER_SIZE] = *current_byte;
+        out_buff_pos++;
+        if(out_buff_pos%REVEAL_BUFFER_SIZE == 0){
+            fwrite(out_block, REVEAL_BUFFER_SIZE, 1, out_file);
+        }
+        current_byte++;
+    }
+    // Write remainder in buffer to out_file
+    fwrite(out_block, out_buff_pos%REVEAL_BUFFER_SIZE, 1, out_file);
+
+    // Get extension
+    int extension_pos=0;
+    for(int i =0; *current_byte != 0; i++){
+        extension[extension_pos++] = *(current_byte++);
+    }
+    extension[extension_pos]=0;
+}
+
 
 void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){ 
     printf("Inside reveal lsbn\n");

@@ -54,4 +54,5 @@ dkms.conf
 
 steg
 
-resources/
+resources/embed_*
+resources/extract_*

@@ -17,11 +17,22 @@ Son válidas en cambio las siguientes opciones:
 - Indicar sólo password: Se asume algoritmo aes128 en modo CBC por default. \
 
 make clean && make all
-./steg -x -p resources/ladoLSB1.bmp -o resources/out_reveal_4 -s lsb1
-./steg -e -p resources/lado.bmp -o resources/embed.bmp -i resources/out_reveal_1.png -s lsb1
 
-<!-- ./steg -x -p resources/ladoLSB1.bmp -o resources/out_reveal_4 -s lsb1 -->
+EMBED without encryption
+LSB1
+./steg -e -p resources/lado.bmp -o resources/embed_lsb1.bmp -i resources/itba.png -s lsb1
+LSB2
+./steg -e -p resources/lado.bmp -o resources/embed_lsb4.bmp -i resources/itba.png -s lsb4
+LSBI
+./steg -e -p resources/lado.bmp -o resources/embed_lsbi.bmp -i resources/itba.png -s lsbi
 
-./steg -e -p resources/lado.bmp -o resources/embed_4.bmp -i resources/out_reveal_1.png -s lsb4
+EXTRACT without encryption
+LSB1
+./steg -x -p resources/ladoLSB1.bmp -o resources/extract_lsb1 -s lsb1
+LSB4
+./steg -x -p resources/ladoLSB4.bmp -o resources/extract_lsb4 -s lsb4
+LSBI
+./steg -x -p resources/ladoLSBI.bmp -o resources/extract_lsbi -s lsbi
 
-./steg -e -p resources/lado.bmp -o resources/embed_i.bmp -i resources/out_reveal_i.png -s lsbi
+LSB1
+./steg -x -p resources/ladoLSB1aes192cbc.bmp -o resources/extract_lsb1_aes192cbc -s lsb1 -a aes192 -m cbc -k escondite

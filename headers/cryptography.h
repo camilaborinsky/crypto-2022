@@ -6,6 +6,7 @@
 #include <structs.h>
 #include <openssl/evp.h>
 
+
 enum crypto_algorithm {
     AES_128,
     AES_192,
@@ -15,9 +16,11 @@ enum crypto_algorithm {
 
 enum crypto_block_algorithm{
     ECB,
+    CFB,
     OFB,
     CBC
 };
+
 
 static int encrypt_decrypt(
     const uint8_t* in, 
@@ -35,6 +38,9 @@ static const EVP_CIPHER* get_cipher(
     enum crypto_block_algorithm block_chaining_type
 );
 
-void decrypt(FILE* encrypted_file, Parameters params);
+int decrypt(FILE* encrypted_file, Parameters params, char * decrypted_data);
+
+enum crypto_algorithm get_encryption_algorithm(char * algorithm);
+enum crypto_block_algorithm get_block_algorithm(char * algorithm);
 
 #endif
