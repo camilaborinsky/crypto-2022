@@ -9,7 +9,9 @@ La organización formal del documento es académica y apropiada. Primero introdu
 
 En cuanto a la claridad en la descripción del algoritmo, creemos que no se logró plasmar la idea del mismo de forma simple. Necesitamos varias leídas del mismo para entender verdaderamente cómo era la implementación. Hubiera servido tener alguna figura que tal vez ayudaba a la comprensión y no solo la explicación en prosa.
 
-La notación utilizada es escasa, se explica bastante con palabras, en este sentido creo que ayuda un poco a la lectura porque cuando las explicaciones están muy cargadas con notación se vuelven muy difíciles de seguir. No enontramos contradicciones ni errores.
+La notación utilizada es escasa, se explica bastante con palabras, en este sentido creo que ayuda un poco a la lectura porque cuando las explicaciones están muy cargadas con notación se vuelven muy difíciles de seguir. 
+
+No encontramos contradicciones pero encontramos un error pequeño en la primera línea del 3er párrafo en la explicación del First Scheme en la página 3 del pdf publicado por la cátedra (página 2 del paper). El error es simplemente un typo en la enumeración de los patrones pues dice "(00, 10, 10, 11)" donde entendemos debería decir (00, 01, 10, 11).
 
 2. Esteganografiar un mismo archivo en un .bmp con cada uno de los tres algoritmos, y
    comparar los resultados obtenidos. Hacer un cuadro comparativo de los tres algoritmos
@@ -66,12 +68,19 @@ La desventaja clara que presenta la propuesta es tener que hacer 2 pasadas sobre
    invertidos?
 
 Se nos ocurre que se podría guardar también en los 4 bits menos significativos pero del final del archivo para dificultarle el trabajo de revelar el secreto a alguien que tenga conocimiento de lsbi, aunque de todas formas no nos parece una mejora importante. Lo mismo si cambiamos el orden de guardado de los patrones en donde sea que guardemos.
+Otra opción sería enviar los patrones por otro canal o de otra forma y que actúe como una suerte de key, aunque no sería muy segura al solo haber 2^4 posibilidades. Es fácilemente atacable por fuerza bruta.
 
 9. Leer el Segundo esquema y analizar (sin implementar) cuáles serían las ventajas que
    pueden verse.
 
+La ventaja que presenta este nuevo esquema es que ahora la imagen con payload oculto es aún más parecida a la imagen original que para el primer esquema. Esto ocurre porque no solo se trabaja con los 4 patrones que forma el 2do y 3er LSB sino que también se abre cada patrón para considerar si se debería invertir los casos donde había un 0 originalemente en la imagen o un 1. Tenemos ahora 8 patrones, lo que nos da mayor calidad de ocultamiento.
+
+No estamos seguros por qué en el 3er párrafo de esta sección en su 4ta línea habla de tener que guardar un máximo de 8 patrones, cuando nos parece que siempre se deberían guardar 8 patrones al tener que guardar un 0 o un 1 siempre. De otra forma no sabríamos si hay que invertir o no al no tener valor alguno, ni sabríamos cuál es el patrón que se saltearon si no tenemos 8 valores.
+
 10. Leer el Segundo esquema e indicar qué desventajas o inconvenientes podría tener su
     implementación.
+
+La primera que encontramos no es tanto de implementación sino de su uso por el hecho de la necesidad de que el destinatario de nuestro archivo con payload oculto tenga en su posesión también la imagen original. Sería un problema grande en casos en los que no sepamos la identidad con seguridad del destinatario y enviarle 2 veces una misma imagen por un canal público (pues nos parece no tendría mucha gracia ocultar información que se le enviaría directamente a un destinatario de manera segura) llamaría la atención y daría una oportunidad fácil de aprovechar de comparar los dos archivos lado a lado.
 
 11. ¿Qué dificultades encontraron en la implementación del algoritmo del paper?
 
@@ -80,13 +89,9 @@ Se nos ocurre que se podría guardar también en los 4 bits menos significativos
 Algunas mejoras que se nos ocurran son:
 
 - Soportar otros tipos de archivos como portadores. No trabajar solo con bmp, sino también otro formato de imágenes o ni siquiera imágenes. La dificultad está en atarse a los formatos de cada tipo de archivo (por ejemplo el parseo del header que hacemos sobre bmps)
-- soportar otras versiones de imágenes BMP como portadores (en este trabajo
-  sólo se trabajó con la versión 3).
-- soportar otros tipos de imágenes como portadores, de manera que poder usar
-  no sólo imágenes BMP para guardar datos ocultos.
-- soportar otros tipos de archivos como portadores, como por ehemplo arhivos de
-  audio o de video.
-- soportar otros tipos de esteganografía fuera de los LSB implementados
-- soportar otros tipos de encriptado. Por ejemplo se podría implementar cifrado
-  asimétrico.
-- soportar detección y extracción automática de un archivo portador
+- Soportar otras versiones de imágenes BMP como portadores y no solo la 3. Deberíamos estar atentos a las diferencias del formato.
+- Soportar archivos BMP comprimidos como portadores. Deberíamos estar atentos a las diferencias del formato.
+- Implementar detección automática del LSB usado y extracción automática del payload.
+- Soportar otras técnicas de esteganografía además de los LSB implementados.
+- Soportar encriptación de a bloques, actualmente requiere guardar todo el archivo en memoria (el no encriptado).
+
