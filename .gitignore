@@ -54,6 +54,9 @@ dkms.conf
 
 steg
 
+estegoanalisis/
+
 resources/embed_*
 resources/extract_*
 *.txt
+*.bin

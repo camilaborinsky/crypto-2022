@@ -10,7 +10,7 @@
 #define FILE_EXTENSION_LENGTH 8
 #define INVERTED_BIT 0
 #define SAME_BIT 1
-#define DATA_BUFF_SIZE 1024 * 1024 // 1MB
+#define DATA_BUFF_SIZE 50 * 1024 * 1024 // 50MB
 
 uint8_t hide_buffer[HIDE_BUFFER_SIZE+1];
 
