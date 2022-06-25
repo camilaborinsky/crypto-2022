@@ -1,49 +1,77 @@
-### Criptografía y seguridad - Instituto Tecnológico de Buenos Aires
+##### Criptografía y seguridad - Instituto Tecnológico de Buenos Aires
 
-## Trabajo Práctico especial: Esteganografía
+# Trabajo Práctico especial: Esteganografía
 
 ### Autores
 
-- [Riera Torraca, Valentino](https://github.com/vriera) - Legajo 60212
 - [Quintairos, Juan Ignacio](https://github.com/juaniq99) - Legajo 59715
 - [Borinsky, Camila](https://github.com/camilaborinsky) - Legajo 60083
+- [Riera Torraca, Valentino](https://github.com/vriera) - Legajo 60212
 
-### Para ocultar archivo
+## Compilación
 
-Esteganografiar el archivo de texto “mensaje1.txt” en el archivo portador “imagen1.bmp”
-obteniendo un archivo “imagenmas1 .bmp” mediante el algoritmo LSB Improved, con encripción DES en
-modo CBC con password “oculto” \
-`stegobmp -embed –in “mensaje1.txt” –p “imagen1.bmp” -out “imagenmas1.bmp” –steg LSBI –a des –m cbc -pass “oculto”`\
-Esteganografiar el archivo de imagen “mensaje1.txt” en el archivo portador “imagen1 .bmp”
-obteniendo un archivo “imagenmas1.bmp” mediante el algoritmo LSB Improved, sin encripción\
-`stegobmp -embed –in “mensaje1.txt” –p “imagen1.bmp” -out “imagenmas1.bmp” –steg LSBI` \
-No se puede encriptar/desencriptar sin password. Si este dato no está, sólo se esteganografia. \
-Son válidas en cambio las siguientes opciones:
+```
+make all
+```
 
-- indicar algoritmo y password pero no modo: Se asume CBC por default.
-- Indicar modo y password pero no algoritmo: Se asume aes128 por default.
-- Indicar sólo password: Se asume algoritmo aes128 en modo CBC por default. \
+## Ejecución
 
-make clean && make all
+### Para ocultar archivos sin encriptar
 
-EMBED without encryption
-LSB1
+#### Con LSB1
+
+```
 ./steg -e -p resources/lado.bmp -o resources/embed_lsb1.bmp -i resources/itba.png -s lsb1
-LSB2
+./steg --embed -p resources/lado.bmp --out resources/embed_lsb1.bmp --i resources/itba.png --steg lsb1
+```
+
+#### Con LSB4
+
+```
 ./steg -e -p resources/lado.bmp -o resources/embed_lsb4.bmp -i resources/itba.png -s lsb4
-LSBI
+./steg --embed -p resources/lado.bmp --out resources/embed_lsb4.bmp --i resources/itba.png --steg lsb4
+```
+
+#### Con LSBI
+
+```
 ./steg -e -p resources/lado.bmp -o resources/embed_lsbi.bmp -i resources/itba.png -s lsbi
+./steg --embed -p resources/lado.bmp --out resources/embed_lsbi.bmp --i resources/itba.png --steg lsbi
+```
 
-EXTRACT without encryption
-LSB1
+### Para extraer sin encriptar
+
+#### Con LSB1
+
+```
 ./steg -x -p resources/ladoLSB1.bmp -o resources/extract_lsb1 -s lsb1
-LSB4
+./steg --extract -p resources/ladoLSB1.bmp --out resources/extract_lsb1 --steg lsb1
+```
+
+#### Con LSB4
+
+```
 ./steg -x -p resources/ladoLSB4.bmp -o resources/extract_lsb4 -s lsb4
-LSBI
+./steg --extract -p resources/ladoLSB4.bmp --out resources/extract_lsb4 --steg lsb4
+```
+
+#### Con LSBI
+
+```
 ./steg -x -p resources/ladoLSBI.bmp -o resources/extract_lsbi -s lsbi
+./steg --extract -p resources/ladoLSBI.bmp --out resources/extract_lsbi --steg lsbi
+```
 
-LSB1
-./steg -x -p resources/ladoLSB1aes192cbc.bmp -o resources/extract_lsb1_aes192cbc -s lsb1 -a aes192 -m cbc -k escondite
-./steg -e -p resources/lado.bmp -o resources/embed_lsb1_aes192cbc.bmp -s lsb1 -a aes192 -m cbc -k escondite -i resources/itba.png
+### Para ocultar archivos con contenido encriptado
 
-./steg -x -p estegoanalisis/sherlock.bmp -o estegoanalisis/extract_sherlock_aes256ecb_lsb1 -s lsb1 -a aes192 -m ecb -k divertido
+```
+./steg -e -p resources/lado.bmp -o resources/embed_lsb1.bmp -i resources/itba.png -s lsb1 -a aes192 -m cbc -k escondite
+./steg --embed -p resources/lado.bmp --out resources/embed_lsb1.bmp --i resources/itba.png --steg lsb1 -a aes192 -m cbc --pass escondite
+```
+
+### Para extraer archivos con contenido encriptado
+
+```
+./steg -x -p resources/ladoLSBI.bmp -o resources/extract_lsbi -s lsbi -a aes192 -m cbc -k escondite
+./steg --extract -p resources/ladoLSBI.bmp --out resources/extract_lsbi --steg lsbi -a aes192 -m cbc --pass escondite
+```

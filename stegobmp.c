@@ -16,15 +16,21 @@ int main(int argc, char *argv[])
     // Read arguments
     Parameters* params = parse_arguments(argc, argv);
 
-    printf("BMP file : %d\n", params->bmp->size);
-
     int return_value = 0;
-
-    if (params->hide == 1)
-        return_value = hide(*params);
-    else
-        return_value = reveal(*params);
-
+    if(params->encrypted && params->password == NULL ){
+        printf("Missing cryptographic password or block chaining mode\n");
+        return_value = 1;
+    }
+    if(params->steg == NULL){
+        printf("Steg algorithm is required\n");
+        return_value = 1;
+    }
+    if(return_value == 0){
+        if (params->hide == 1)
+            return_value = hide(*params);
+        else
+            return_value = reveal(*params);
+    }
     free_params(params);
     return return_value;
 }
@@ -36,6 +42,11 @@ Parameters * parse_arguments(int argc, char *argv[]){
         exit(1);
     }
     params->encrypted = 0;
+    params->password = NULL;
+    params->enc_alg = NULL;
+    params->enc_mode = NULL;
+    params->steg = NULL;
+    params->out_file_name = NULL;
     char* opts = "xep:o:i:s:a:m:k:";
     int c;
     static struct option long_options[] =
@@ -57,15 +68,10 @@ Parameters * parse_arguments(int argc, char *argv[]){
         switch (c)
             {
         
-            case 0:{
+            case 0:
                 /* If this option set a flag, do nothing else now. */
                 if (long_options[option_index].flag != 0)
                 break;
-                printf ("option %s", long_options[option_index].name);
-                if (optarg)
-                printf (" with arg %s", optarg);
-                printf ("\n");
-            }break;
 
             case 'x':
                 params->hide = 0;
@@ -82,8 +88,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
             case 'o': ; // Semicolon to avoid label error
                 FILE* out_file = fopen(optarg, "w");
                 if (out_file == NULL){
-                    printf("Error opening out_file in stegobmp %s\n", optarg);
-                    perror("Error opening file");
+                    printf("Error opening file\n");
                     exit(1);
                 }
                 params-> out_file_name = optarg;
@@ -104,10 +109,12 @@ Parameters * parse_arguments(int argc, char *argv[]){
                 break;
 
             case 'm':
+                params->encrypted = 1;
                 params->enc_mode = optarg;
                 break;
 
             case 'k':
+                params->encrypted = 1;
                 params->password = optarg;
                 break;
             default:
@@ -139,7 +146,6 @@ PayloadFile * get_payload_from_path(char* path){
         exit(1);
     }
     strcpy(payload_struct->extension, ext);
-    printf("Payload extension: %s\n", payload_struct->extension);
     
     // Get size
     if (fseek(payload_file, 0, SEEK_END) != 0){
@@ -167,12 +173,21 @@ PayloadFile * get_payload_from_path(char* path){
 }
 
 BMPFile * get_bmp_from_path(char* path){
+
+    // Check that cover file is actually bmp
+    const char* cover_ext = get_filename_ext(path);
+    if (strcmp(cover_ext, ".bmp") != 0){
+        printf("Cover file should be .bmp, received: %s\n", cover_ext);
+        exit(1);
+    }
+
     BMPFile * bmp = malloc(sizeof(BMPFile));
     if(bmp == NULL){
         printf("Malloc error\n");
         exit(1);
     }
-    
+
+    // Open file
     FILE* bmp_file = fopen(path, "r");
     if(bmp_file == NULL ){
         printf("Error opening bmp file");
@@ -186,9 +201,20 @@ BMPFile * get_bmp_from_path(char* path){
         printf("Malloc error\n");
         exit(1);
     }
-    fread(bmp->header, HEADER_SIZE, 1, bmp_file); //TODO: ver si hace falta guardar el header o si lo podemos sacar
+    fread(bmp->header, HEADER_SIZE, 1, bmp_file);
     bmp->header[HEADER_SIZE] = 0;
-    // TODO: Check that bmp is not compressed, if it is then exit
+    
+    // Check that bmp is not compressed, if it is then exit
+    uint8_t compression[4] = {-1,-1,-1,-1};
+    memcpy(compression , bmp->header + 30 , 4);
+
+    if(compression[0] != 0 && compression[1] != 0 && compression[2] != 0 && compression[3] != 0){
+        printf("Compression: %X %X %X %X\n" , compression[0] ,compression[1], compression[2], compression[3]);
+        printf("Image cannot be compressed!\n");
+        exit(1);
+    }
+    
+    // TODO volar la estructura BMPHeader "real" si no la usamos
 
     // Get size
     if (fseek(bmp_file, 0, SEEK_END) != 0){

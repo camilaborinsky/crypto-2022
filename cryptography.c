@@ -18,7 +18,7 @@ int encrypt(char * payload, size_t payload_size, Parameters params, char * encry
         exit(1);
     }
 
-    encrypt_decrypt(payload, payload_size, params.password, enc_algo, block_algo, encrypted_data, &encrypted_data_size, 1);
+    encrypt_decrypt((uint8_t *)payload, payload_size, params.password, enc_algo, block_algo, (uint8_t*)encrypted_data, &encrypted_data_size, 1);
 
     return encrypted_data_size;
 }
@@ -44,7 +44,6 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
     }
     fread(encrypted_data, in_size, 1, encrypted_file);
     encrypted_data[in_size] = 0;
-    printf("IN size %d\n", in_size);
 
 
 
@@ -56,7 +55,7 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
         exit(1);
     }
 
-    encrypt_decrypt(encrypted_data, in_size, param.password, enc_algo, block_algo, decrypted_data, &decrypted_data_size, 0);
+    encrypt_decrypt((uint8_t*)encrypted_data, in_size, param.password, enc_algo, block_algo, (uint8_t*)decrypted_data, &decrypted_data_size, 0);
 
     free(encrypted_data);
 
@@ -102,7 +101,6 @@ const EVP_CIPHER* get_cipher(
     // Build crypto algorithm 
     strncpy(cipher_name, cryptographic_algorithm_names[algorithm], cryptographic_algorithm_name_size[algorithm]);
     strncat(cipher_name, block_chaining_type_names[block_chaining_type], block_chaining_type_name_size[block_chaining_type]);
-    printf("Decrypting with cipher %s\n", cipher_name);
     // Get pointer from openssl by name
     return EVP_get_cipherbyname(cipher_name);
 }
@@ -119,8 +117,7 @@ int encrypt_decrypt(
     uint32_t* out_size,
     int mode
 ){
-    printf("\n\nEncrypt parameters:\n");
-    printf("In: %p\n in_size: %d\n password: %s\n out: %p\n out_size: %ls\n", in, in_size, password, out, out_size);
+
     uint8_t* k;
     uint8_t* iv;
     int out_final_size, out_temporary_size;
@@ -128,7 +125,8 @@ int encrypt_decrypt(
 
     context = EVP_CIPHER_CTX_new();
     if(!context){
-        perror("Context error\n");
+        printf("Context error\n");
+        exit(1);
     }
     // Map encryption algorithm enum to special library type
     const EVP_CIPHER* cipher = get_cipher(algorithm, block_chaining_type);
@@ -141,37 +139,35 @@ int encrypt_decrypt(
     iv = malloc(sizeof(uint8_t*) * EVP_CIPHER_iv_length(cipher));
 
     // Initialize key and iv
-    if(!EVP_BytesToKey(cipher, EVP_sha256(), NULL, password, strlen((char *)password), 1, k, iv)){
-        perror("EVP bytes to key error");
+    if(!EVP_BytesToKey(cipher, EVP_sha256(), NULL, (uint8_t*)password, strlen((char *)password), 1, k, iv)){
+        printf("EVP bytes to key error");
+        exit(1);
     }
 
     // Encrypt/Decrypt
     if(EVP_CipherInit_ex(context, cipher, NULL, k, iv, mode)==0){
-        perror("Intialization error");
+        printf("Intialization error");
+        exit(1);
     }
 
-    // if (!EVP_CIPHER_CTX_ctrl(context, EVP_CTRL_GCM_SET_IVLEN, EVP_CIPHER_iv_length(cipher), NULL))
-    //     perror("ERROR");
-
     if(EVP_CipherUpdate(context, out, &out_temporary_size, in, in_size)==0){
-        perror("Decryption error in update");
+        printf("Decryption error in update");
+        exit(1);
     }
     int final_return;
     final_return = EVP_CipherFinal(context, out+out_temporary_size, &out_final_size);
     if(final_return == 0){
-        perror("Decryption error in final");
+        printf("Decryption error in final");
+        exit(1);
     }
 
-    ERR_print_errors_fp(stdout);
-    //ERR_print_errors_fp(stderr);
     *out_size = out_temporary_size + out_final_size;
     EVP_CIPHER_CTX_free(context);
+
     // Free key and IV
     free(k);
     free(iv);
 
-    // Clean context
-    // EVP_CIPHER_CTX_cleanup(context);
 
     return 0;
 }

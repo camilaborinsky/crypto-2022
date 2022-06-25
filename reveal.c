@@ -9,7 +9,7 @@
 #define FILE_SIZE_LENGTH 4
 #define LSBI_PATTERN_LENGTH 4
 #define FILE_EXTENSION_LENGTH 8
-#define DATA_BUFF_SIZE 50 * 1048576  // 50MB
+#define DATA_BUFF_SIZE 50 * 1024 * 1024  // 50MB
 
 char out_block[REVEAL_BUFFER_SIZE];
 char extension[FILE_EXTENSION_LENGTH];
@@ -48,6 +48,7 @@ int reveal(Parameters params){
         }
         int decrypted_data_size = decrypt(encrypted_file, params, decrypted_data);
         fclose(encrypted_file);
+        remove("encrypted_file");
         // Now separate file_size || body || extension
         separate_decrypted_data(decrypted_data, decrypted_data_size, params.out_file);
         free(decrypted_data);
@@ -135,6 +136,10 @@ void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){
        
     }
 
+    if(real_size < 0){
+        printf("Payload size is negative. Probably incorrect steg method\n");
+        exit(1);
+    }
     
     // Reading hidden data and writing to outfile
     for(int i = 0; i < real_size*multiplier ; i++){ //TODO chequear
@@ -182,8 +187,6 @@ void reveal_lsbn(BMPFile bmp, FILE* out_file, int n, int encrypted){
             rebuilding_byte = 0x00;   
         }
     }
-    printf("\nExtension: %s\n", extension);
-    printf("\nOut file size: %ld\n", out_file_size);
 }
 
 
@@ -214,6 +217,11 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n, int encrypted){
         curr_byte += 1;
         real_size = real_size << 1;
         real_size = real_size | bit_to_reveal;
+    }
+
+    if(real_size < 0){
+        printf("Payload size is negative. Probably incorrect steg method\n");
+        exit(1);
     }
 
     // Parse file content with lsbi
@@ -266,8 +274,5 @@ void reveal_lsbi(BMPFile bmp, FILE* out_file, int n, int encrypted){
             rebuilding_byte = 0x00;   
         }
     }
-    printf("\nExtension: %s\n", extension);
-    printf("\nOut file size: %ld\n", out_file_size);
-
     
 }

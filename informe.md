@@ -1,12 +1,14 @@
+<style>body {text-align: justify}</style>
+
 ## Criptografía y seguridad (ITBA)
 
 # Trabajo Práctico: Esteganografía
 
 ### Autores
 
-Juan Ignacio Quintairos
-Valentino Riera Torraca
-Camila Borinsky
+- [Quintairos, Juan Ignacio](https://github.com/juaniq99) - Legajo 59715
+- [Borinsky, Camila](https://github.com/camilaborinsky) - Legajo 60083
+- [Riera Torraca, Valentino](https://github.com/vriera) - Legajo 60212
 
 ## Introducción
 
@@ -45,6 +47,7 @@ A modo de facilitar el entendimiento de nuestro código y la estructura del proy
 - El archivo reveal.c resuelve los pedidos de extracción de payload. Se cuenta con una primera función con cómputos generales que luego llama a otra dependiendo si se trata de lsb1 o lsb4, o si se trata de lsbi. Si se debe desencriptar se utilizan funcionalidades de cryptography.c
 - El archivo hide.c resuelve los pedidos de ocultamiento de payload. Se cuenta con una primera función con cómputos generales que luego llama a otra dependiendo del algoritmo solicitado. Si se debe encriptar se utilizan funcionalidades de cryptography.c
 - El archivo cryptography.c contiene funciones que utilizan la librería openssl para resolver los pedidos de encripción y desencripción.
+- El archivo cmp_bits.c lo usamos para realizar pruebas de comparación de archivos byte a byte.
 
 En el caso de ocultar/revelar un contenido encriptado la convención que seguimos fue:<br>
 `LSB(`tamaño del cifrado, `encrypt(`tamaño del `payload` || `payload` || extensión del `payload))`
@@ -62,7 +65,7 @@ En el caso de ocultar/revelar un contenido encriptado la convención que seguimo
 
     La notación utilizada es escasa, se explica bastante con palabras, en este sentido creo que ayuda un poco a la lectura porque cuando las explicaciones están muy cargadas con notación se vuelven muy difíciles de seguir.
 
-    No encontramos contradicciones pero encontramos un error pequeño en la primera línea del 3er párrafo en la explicación del First Scheme en la página 3 del pdf publicado por la cátedra (página 2 del paper). El error es simplemente un typo en la enumeración de los patrones pues dice "(00, 10, 10, 11)" donde entendemos debería decir (00, 01, 10, 11).
+    No encontramos contradicciones pero encontramos un error pequeño en la primera línea del 3er párrafo en la explicación del First Scheme en la página 3 del pdf publicado por la cátedra (página 2 del paper). El error es simplemente un typo en la enumeración de los patrones pues dice "(00, 10, 10, 11)" donde entendemos debería decir (00, 01, 10, 11). Encontramos otro error en la sección del second scheme que explicamos al final del punto 9.
 
 2.  Esteganografiar un mismo archivo en un .bmp con cada uno de los tres algoritmos, y comparar los resultados obtenidos. Hacer un cuadro comparativo de los tres algoritmos estableciendo ventajas y desventajas.
 
@@ -94,9 +97,10 @@ xxd loimposible.bmp | tail -n 10
 
 ![Tail screenshot](./estegoanalisis/tail_screenshot.png)<br>
 <br>
-Como el único png que habíamos obtenido era el del buscaminas, le cambiamos la extensión a una copia de este archivo y extrajimos el zip y obtuvimos el algoritmo y modo de encripción: AES 256 con ECB (más adelante explicamos cómo).
+Como el único png que habíamos obtenido era el del buscaminas, le cambiamos la extensión a una copia de este archivo y extrajimos el zip y obtuvimos el algoritmo y modo de encripción: AES 256 con ECB (en la pregunta 4 explicamos cómo).
 
-- Sherlock con la password, algoritmo y modo obtenidos aplicando lsb nos entrega un
+No nos está funcionando la desencripción para este archivo aunque sí para los archivos de prueba presentes en campus.
+Lo que hicimos entonces fue pedirle su archivo .wmv a un grupo que sí le funciónó para poder responder a la pregunta 5.
 
 4. Algunos mensajes ocultos tenían, a su vez, otros mensajes ocultos. Indica cuál era ese
    mensaje y cómo se había ocultado.
@@ -130,6 +134,13 @@ Como el único png que habíamos obtenido era el del buscaminas, le cambiamos la
    una manera de ocultar información ¿qué se ocultaba según el video y sobre qué
    portador?
 
+   Aunque pudimos desencriptar los archivos de prueba subidos al campus por la cátedra, tuvimos problemas al desencriptar sherlock.bmp con las pistas recopiladas de los demás archivos.
+   Lo que hicimos fue pedirle su archivo .wmv a otro grupo que no tuvo este problema para poder aunque sea responder esta pregunta. Se lo pedimos al grupo n° 4.
+
+   En el video se ve una escena de una serie en la cual dos agentes están analizando un email. Observan que el archivo es más grande de lo que debería ser y en un primer momento creen que es un error de compresión. Luego uno de los agentes señala que es probable que el archivo tenga información oculta.
+
+   El archivo portador sería un email común y corriente, y los datos ocultos información que otra persona escondió en él. Esto se podría lograr con un método diferente a los LSB implementados por nosotros pues ellos no cambian el tamaño del archivo portador, sino sólo su contenido. La información se debe haber ocultado en alguna sección del documento que no provoque cambios visuales considerables en el archivo pues no se notó hasta que vieron el tamaño del mismo.
+
 6. ¿De qué se trató el método de estenografiado que no era LSB1 ni LSB4 ni LSBI? ¿Es un
    método eficaz? ¿Por qué?
 
@@ -159,22 +170,22 @@ Como el único png que habíamos obtenido era el del buscaminas, le cambiamos la
 
 10. Leer el Segundo esquema e indicar qué desventajas o inconvenientes podría tener su implementación.
 
-La primera que encontramos no es tanto de implementación sino de su uso por el hecho de la necesidad de que el destinatario de nuestro archivo con payload oculto tenga en su posesión también la imagen original. Sería un problema grande en casos en los que no sepamos la identidad con seguridad del destinatario y enviarle 2 veces una misma imagen por un canal público (pues nos parece no tendría mucha gracia ocultar información que se le enviaría directamente a un destinatario de manera segura) llamaría la atención y daría una oportunidad fácil de aprovechar de comparar los dos archivos lado a lado.
-Una desventaja mínima es tener ahora 8 bits de patrones a ocultar en vez de 4, pero no debería cambiar prácticamente nada.
+    La primera que encontramos no es tanto de implementación sino de su uso por el hecho de la necesidad de que el destinatario de nuestro archivo con payload oculto tenga en su posesión también la imagen original. Sería un problema grande en casos en los que no sepamos la identidad con seguridad del destinatario y enviarle 2 veces una misma imagen por un canal público (pues nos parece no tendría mucha gracia ocultar información que se le enviaría directamente a un destinatario de manera segura) llamaría la atención y daría una oportunidad fácil de aprovechar de comparar los dos archivos lado a lado.
+    Una desventaja mínima es tener ahora 8 bits de patrones a ocultar en vez de 4, pero no debería cambiar prácticamente nada.
 
-También está el hecho de tener una lógica un poco más compleja, teniendo ahora que prestar atención también al LSB de los bytes de la imagen original para cada patrón.
+    También está el hecho de tener una lógica un poco más compleja, teniendo ahora que prestar atención también al LSB de los bytes de la imagen original para cada patrón.
 
 11. ¿Qué dificultades encontraron en la implementación del algoritmo del paper?
 
-La mayor dificultad que encontramos fue entender el algoritmo. Luego de comprender como funcionaba la implementación no nos resultó demasiado complicada, lo más importante fue agregar la funcionalidad que difería de los otros algoritmos LSB en el uso de los primeros 4 bytes para guardar los patrones. A diferencia de los otros algoritmos tuvimos que hacer 2 pasadas por lo que vamos a esconder para precalcular el patrón. Un detalle que encontramos casi al final fue que al precalcular la cantidad de inversiones no habíamos considerado el offset de 4 bytes donde luego se guarda el patrón.
+    La mayor dificultad que encontramos fue entender el algoritmo. Luego de comprender como funcionaba la implementación no nos resultó demasiado complicada, lo más importante fue agregar la funcionalidad que difería de los otros algoritmos LSB en el uso de los primeros 4 bytes para guardar los patrones. A diferencia de los otros algoritmos tuvimos que hacer 2 pasadas por lo que vamos a esconder para precalcular el patrón. Un detalle que encontramos casi al final fue que al precalcular la cantidad de inversiones no habíamos considerado el offset de 4 bytes donde luego se guarda el patrón.
 
 12. ¿Qué mejoras o futuras extensiones harías al programa stegobmp?
 
-Algunas mejoras que se nos ocurren son:
+    Algunas mejoras que se nos ocurren son:
 
-- Soportar otros tipos de archivos como portadores. No trabajar solo con bmp, sino también otro formato de imágenes o ni siquiera imágenes. La dificultad está en atarse a los formatos de cada tipo de archivo (por ejemplo el parseo del header que hacemos sobre bmps)
-- Soportar otras versiones de imágenes BMP como portadores y no solo la 3. Deberíamos estar atentos a las diferencias del formato.
-- Soportar archivos BMP comprimidos como portadores. Deberíamos estar atentos a las diferencias del formato.
-- Implementar detección automática del LSB usado y extracción automática del payload.
-- Soportar otras técnicas de esteganografía además de los LSB implementados.
-- Soportar encriptación de a bloques, actualmente nuestra implementación requiere guardar todo el archivo en memoria (el no encriptado o a desencriptar).
+    - Soportar otros tipos de archivos como portadores. No trabajar solo con bmp, sino también otro formato de imágenes o ni siquiera imágenes. La dificultad está en atarse a los formatos de cada tipo de archivo (por ejemplo el parseo del header que hacemos sobre bmps)
+    - Soportar otras versiones de imágenes BMP como portadores y no solo la 3. Deberíamos estar atentos a las diferencias del formato.
+    - Soportar archivos BMP comprimidos como portadores. Deberíamos estar atentos a las diferencias del formato.
+    - Implementar detección automática del LSB usado y extracción automática del payload.
+    - Soportar otras técnicas de esteganografía además de los LSB implementados.
+    - Soportar encriptación de a bloques, actualmente nuestra implementación requiere guardar todo el archivo en memoria (el no encriptado o a desencriptar).

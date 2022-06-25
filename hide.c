@@ -21,11 +21,11 @@ int hide(Parameters params){
     if (params.encrypted){
         char * data_to_encrypt = malloc(FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension)+1);
         if(data_to_encrypt == NULL){
-            perror("Malloc error in data to encrypt\n");
+            printf("Malloc error in data to encrypt\n");
         }
         encrypted_data = malloc(DATA_BUFF_SIZE);
         if(encrypted_data == NULL){
-            perror("Malloc error in encrypted data\n");
+            printf("Malloc error in encrypted data\n");
         }
         // Build a char*   payload_size||payload||extension
         // Get payload file size
@@ -45,7 +45,7 @@ int hide(Parameters params){
     
 
     // Check that bmp file is long enough for the payload to fit. If not throw error
-    // Needs to fit [ file_size || file || ".extension\0" ] == [ 32 | m_size | 64(., 6 chars and 0) ]
+    // Needs to fit [ file_size || file || ".extension\0" ] == [ 32 | m_size | strlen(extension) ]
     char * stego_string = params.steg;
     void (*steg_function)(BMPFile bmp_file, char* payload, size_t payload_size, FILE* out_file);
     char * data_to_hide;
@@ -57,29 +57,35 @@ int hide(Parameters params){
             exit(1);
         }
         payload_actual_size = encrypted_data_size + FILE_SIZE_LENGTH;
-        // Get encrypted adta size as 4 bytes
+        
+        // Get encrypted data size as 4 bytes
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, encrypted_data_size);
+        
+        // Build [ encrypted_size + encrypted_payload ]
         memcpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
         memcpy(data_to_hide + FILE_SIZE_LENGTH, encrypted_data, encrypted_data_size);
     } else {
         data_to_hide = malloc(DATA_BUFF_SIZE);
     
+        // Get data size as 4 bytes
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, params.payload->size);
         
+        // Build [ size + payload + extension ]
         memcpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
         memcpy(data_to_hide + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
         memcpy(data_to_hide + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension, strlen(params.payload->extension) + 1);
 
-
         payload_actual_size = FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension) + 1;
     }
 
+    // Check payload fits in cover image and set algorithm
     if (strcmp(stego_string, "lsb1") == 0){
         steg_function = hide_lsb1;
         if (params.bmp->size / 8 < payload_actual_size){
             printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload->size*8);
+            free(data_to_hide);
             return -1;
         }
     }
@@ -87,6 +93,7 @@ int hide(Parameters params){
         steg_function = hide_lsb4;
         if (params.bmp->size / 2 < payload_actual_size){
             printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload->size*2);
+            free(data_to_hide);
             return -1;
         }
     }
@@ -94,11 +101,13 @@ int hide(Parameters params){
         steg_function = hide_lsbi;
         if (params.bmp->size / 8 < payload_actual_size){
             printf("BMP file not big enough for payload, min size of body required is %d\n", params.payload->size*8);
+            free(data_to_hide);
             return -1;
         }
     }
     else {
         printf("stego parameter not supported. Use lsb1, lsb4 or lsbi\n");
+        free(data_to_hide);
         exit(1);
     }
 
@@ -137,7 +146,7 @@ void hide_lsb1(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     int buff_pos = 0;
 
 
-    uint8_t* byte_to_hide = payload;
+    uint8_t* byte_to_hide = (uint8_t *)payload;
     // Hide payload body
     for (int i=0; i < (payload_size) * 8; i++){
         uint8_t bit_to_add = (*(byte_to_hide) >> (7 - i % 8)) & mask;       // 0x00 or 0x01
@@ -196,7 +205,7 @@ void hide_lsb4(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     int buff_pos = 0;
 
    
-    uint8_t* byte_to_hide = payload;
+    uint8_t* byte_to_hide = (uint8_t *)payload;
     uint8_t bits_to_add;
     // Hide payload body
     for (int i=0; i < (payload_size) * 2; i++){
@@ -209,7 +218,7 @@ void hide_lsb4(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
         new_byte = (*(bmp.current_byte) & (~mask)) | bits_to_add;
         bmp.current_byte++;
 
-        // Write byte to file or (better) to buffer to write more than a single byte at a time
+        // Write byte to buffer to write more than a single byte at a time
         hide_buffer[buff_pos++] = new_byte;
 
         if (buff_pos == HIDE_BUFFER_SIZE){
@@ -254,7 +263,7 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     uint8_t mask = 0x01;
     
 
-    uint8_t* byte_to_hide = payload;
+    uint8_t* byte_to_hide = (uint8_t *)payload;
     uint8_t new_byte;
     uint8_t bmp_pattern;
     uint8_t bmp_bit;
@@ -275,7 +284,7 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     }
 
     bmp.current_byte = bmp.body;
-    byte_to_hide = payload;
+    byte_to_hide = (uint8_t *)payload;
     int buff_pos = 0;
 
 
@@ -289,7 +298,6 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
             new_byte = *(bmp.current_byte) & ~(mask); //1111 1110
             must_invert[i] = 0;
         }
-        printf("Must invert %d\n", must_invert[i]);
         hide_buffer[buff_pos++] = new_byte;
         bmp.current_byte++;
     }
