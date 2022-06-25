@@ -31,14 +31,14 @@ int hide(Parameters params){
         // Get payload file size
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, params.payload->size);
-
+        printf("P size string: %s\n", p_size_string);
         strncpy(data_to_encrypt, p_size_string, FILE_SIZE_LENGTH);
         strncpy(data_to_encrypt + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
         strcpy(data_to_encrypt + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);   
 
         encrypted_data_size = encrypt(data_to_encrypt, FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension) + 1, params, encrypted_data);
     
-
+        free(data_to_encrypt);
     }
     
     
@@ -57,7 +57,7 @@ int hide(Parameters params){
     
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
         fill_payload_size_str(p_size_string, params.payload->size);
-
+        printf("P size string: %s\n", p_size_string);
         strncpy(data_to_hide, p_size_string, FILE_SIZE_LENGTH);
         strncpy(data_to_hide + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
         strcpy(data_to_hide + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);
@@ -93,8 +93,8 @@ int hide(Parameters params){
 
     steg_function(*params.bmp, data_to_hide, payload_actual_size, params.out_file);
     free(data_to_hide);
-    if (params.encrypted)
-        free(encrypted_data);
+    // if (params.encrypted)
+    //     free(encrypted_data);
     return 0;
 }
 

@@ -22,10 +22,10 @@ enum crypto_block_algorithm{
 };
 
 
-static int encrypt_decrypt(
+int encrypt_decrypt(
     const uint8_t* in, 
     const uint32_t in_size, 
-    const uint8_t* password, 
+    const char* password, 
     enum crypto_algorithm algorithm, 
     enum crypto_block_algorithm block_chaining_type,
     uint8_t* out,
@@ -33,7 +33,7 @@ static int encrypt_decrypt(
     int mode
 );
 
-static const EVP_CIPHER* get_cipher(
+const EVP_CIPHER* get_cipher(
     enum crypto_algorithm algorithm,
     enum crypto_block_algorithm block_chaining_type
 );

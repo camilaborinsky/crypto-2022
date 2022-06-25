@@ -56,3 +56,4 @@ steg
 
 resources/embed_*
 resources/extract_*
+*.txt

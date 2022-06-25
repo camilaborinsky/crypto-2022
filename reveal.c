@@ -50,6 +50,7 @@ int reveal(Parameters params){
         fclose(encrypted_file);
         // Now separate file_size || body || extension
         separate_decrypted_data(decrypted_data, decrypted_data_size, params.out_file);
+        free(decrypted_data);
     } else {
         steg_function(*params.bmp, params.out_file, n, params.encrypted);
     }
@@ -59,7 +60,7 @@ int reveal(Parameters params){
     strcat(new_file_name, extension);
     new_file_name[new_file_name_size-1] = 0;
     rename(params.out_file_name, new_file_name);
-    
+
     return 0;
 }
 
@@ -75,7 +76,7 @@ void separate_decrypted_data(char* decrypted_data, size_t decrypted_data_size, F
         current_byte++;
     }
     printf("Body size is: %d\n", body_size);
-    printf("Decrypted data size is: %d\n", decrypted_data_size);
+    printf("Decrypted data size is: %ld\n", decrypted_data_size);
 
     // Get body
     int out_buff_pos = 0;

@@ -11,7 +11,7 @@ const int block_chaining_type_name_size[BLOCK_CHAINING_TYPE_NUMBER] = {3, 3, 3, 
 int encrypt(char * payload, size_t payload_size, Parameters params, char * encrypted_data){
     enum crypto_algorithm enc_algo = get_encryption_algorithm((char *)params.enc_alg);
     enum crypto_block_algorithm block_algo = get_block_algorithm((char *)params.enc_mode);
-    size_t encrypted_data_size;
+    uint32_t encrypted_data_size;
 
     if(encrypted_data == NULL){
         printf("Encrypted data is null on encrypt, error\n");
@@ -51,7 +51,7 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
 
     enum crypto_algorithm enc_algo = get_encryption_algorithm((char *)param.enc_alg);
     enum crypto_block_algorithm block_algo = get_block_algorithm((char *)param.enc_mode);
-    size_t decrypted_data_size;
+    uint32_t decrypted_data_size;
     if(decrypted_data == NULL){
         printf("Malloc error\n");
         exit(1);
@@ -94,7 +94,7 @@ enum crypto_algorithm get_encryption_algorithm(char * algorithm){
     }
 }
 
-static const EVP_CIPHER* get_cipher(
+const EVP_CIPHER* get_cipher(
     enum crypto_algorithm algorithm,
     enum crypto_block_algorithm block_chaining_type
 ){
@@ -110,10 +110,10 @@ static const EVP_CIPHER* get_cipher(
 
 
 
-static int encrypt_decrypt(
+int encrypt_decrypt(
     const uint8_t* in, 
     const uint32_t in_size, 
-    const uint8_t* password, 
+    const char* password, 
     enum crypto_algorithm algorithm, 
     enum crypto_block_algorithm block_chaining_type,
     uint8_t* out,
@@ -121,10 +121,10 @@ static int encrypt_decrypt(
     int mode
 ){
     printf("\n\nEncrypt parameters:\n");
-    printf("In: %p\n in_size: %d\n password: %s\n out: %p\n out_size: %p\n", in, in_size, password, out, out_size);
+    printf("In: %p\n in_size: %d\n password: %s\n out: %p\n out_size: %ls\n", in, in_size, password, out, out_size);
     uint8_t* k;
     uint8_t* iv;
-    size_t out_final_size, out_temporary_size;
+    int out_final_size, out_temporary_size;
     EVP_CIPHER_CTX* context;
 
     context = EVP_CIPHER_CTX_new();
@@ -143,7 +143,7 @@ static int encrypt_decrypt(
     iv = malloc(sizeof(uint8_t*) * EVP_CIPHER_iv_length(cipher));
 
     // Initialize key and iv
-    if(!EVP_BytesToKey(cipher, EVP_sha256(), NULL, password, strlen(password), 1, k, iv)){
+    if(!EVP_BytesToKey(cipher, EVP_sha256(), NULL, password, strlen((char *)password), 1, k, iv)){
         perror("EVP bytes to key error");
     }
 
