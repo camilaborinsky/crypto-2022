@@ -333,7 +333,7 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     }
     
     // Write remainder of original bmp as is
-    if(fwrite(bmp.current_byte, bmp.size - (4+payload_size) * 8, 1, out_file) < 0){
+    if(fwrite(bmp.current_byte, bmp.size -  (payload_size) * 8 - 4, 1, out_file) < 0){
         printf("Error writing remainder of bmp to out file\n");
         exit(-1);
     }

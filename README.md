@@ -45,3 +45,5 @@ LSBI
 LSB1
 ./steg -x -p resources/ladoLSB1aes192cbc.bmp -o resources/extract_lsb1_aes192cbc -s lsb1 -a aes192 -m cbc -k escondite
 ./steg -e -p resources/lado.bmp -o resources/embed_lsb1_aes192cbc.bmp -s lsb1 -a aes192 -m cbc -k escondite -i resources/itba.png
+
+./steg -x -p estegoanalisis/sherlock.bmp -o estegoanalisis/extract_sherlock_aes256ecb_lsb1 -s lsb1 -a aes192 -m ecb -k divertido
