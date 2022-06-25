@@ -12,7 +12,7 @@ size_t count_left(FILE * file){
     return count*8;
 }
 
-size_t cmp_bits(FILE * file1 , FILE * file2){
+size_t cmp_bits(FILE * file1 , FILE * file2, int final_flag){
 
     uint8_t byte1 = 0;//read
     uint8_t byte2 = 0;//read
@@ -36,8 +36,7 @@ size_t cmp_bits(FILE * file1 , FILE * file2){
 
             uint8_t mask = 0x1 << (i);
             uint8_t masked_byte_1 = byte1 & mask;
-            uint8_t masked_byte_2 = byte2 & mask;
-
+            uint8_t masked_byte_2 = byte2 & mask; 
             if(masked_byte_1 != masked_byte_2){
                 diff++;
             }
@@ -47,6 +46,11 @@ size_t cmp_bits(FILE * file1 , FILE * file2){
         error2 = fread(buf2 ,1 ,1 ,file2 );
 
     }
+
+    if(!final_flag){
+        return diff;
+    }
+
     if(error1 != 0 ){
         diff+= count_left(file1);
     }

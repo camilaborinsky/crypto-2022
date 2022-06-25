@@ -1,4 +1,12 @@
-# crypto-2022
+### Criptografía y seguridad - Instituto Tecnológico de Buenos Aires
+
+## Trabajo Práctico especial: Esteganografía
+
+### Autores
+
+- [Riera Torraca, Valentino](https://github.com/vriera) - Legajo 60212
+- [Quintairos, Juan Ignacio](https://github.com/juaniq99) - Legajo 59715
+- [Borinsky, Camila](https://github.com/camilaborinsky) - Legajo 60083
 
 ### Para ocultar archivo
 

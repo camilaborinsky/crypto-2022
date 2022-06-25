@@ -259,14 +259,14 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
     uint8_t bmp_pattern;
     uint8_t bmp_bit;
     uint8_t bit_to_add;
-
+    bmp.current_byte += 4;
     for (int i=0; i < payload_size * 8; i++){
         bit_to_add = (*(byte_to_hide) >> (7 - i % 8)) & mask;       // 0x00 or 0x01
         if (i % 8 == 7){     // Advance pointer if all bits were already counted
             byte_to_hide++;
         }
 
-        bmp_pattern = *(bmp.current_byte) & pattern_mask >> 1;
+        bmp_pattern = (*(bmp.current_byte) & pattern_mask) >> 1;
         bmp_bit = *(bmp.current_byte) & mask;
         pattern_count[bmp_pattern][bmp_bit-bit_to_add == 0] += 1;
 
@@ -289,6 +289,7 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
             new_byte = *(bmp.current_byte) & ~(mask); //1111 1110
             must_invert[i] = 0;
         }
+        printf("Must invert %d\n", must_invert[i]);
         hide_buffer[buff_pos++] = new_byte;
         bmp.current_byte++;
     }
@@ -300,7 +301,7 @@ void hide_lsbi(BMPFile bmp, char * payload, size_t payload_size, FILE* out_file)
             byte_to_hide++;
         }
 
-        bmp_pattern = *(bmp.current_byte) & pattern_mask >> 1;
+        bmp_pattern = (*(bmp.current_byte) & pattern_mask) >> 1;
         // If got 0 and shouldnt invert or got 1 and should invert
         if ((bit_to_add == 0x00 && !must_invert[bmp_pattern]) || (bit_to_add == 0x01 && must_invert[bmp_pattern]))
             new_byte = *(bmp.current_byte) & (~mask); // bmp.current_byte & 1111 1110 => put 0
