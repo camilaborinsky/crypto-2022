@@ -83,8 +83,9 @@ Parameters * parse_arguments(int argc, char *argv[]){
             case 'o': ; // Semicolon to avoid label error
                 FILE* out_file = fopen(optarg, "w");
                 if (out_file == NULL){
-                     printf("Error opening out_file");
-                     exit(1);
+                    printf("Error opening out_file in stegobmp %s\n", optarg);
+                    perror("Error opening file");
+                    exit(1);
                 }
                 params-> out_file_name = optarg;
                 params->out_file = out_file;

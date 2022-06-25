@@ -13,6 +13,11 @@ int encrypt(char * payload, size_t payload_size, Parameters params, char * encry
     enum crypto_block_algorithm block_algo = get_block_algorithm((char *)params.enc_mode);
     size_t encrypted_data_size;
 
+    if(encrypted_data == NULL){
+        printf("Encrypted data is null on encrypt, error\n");
+        exit(1);
+    }
+
     encrypt_decrypt(payload, payload_size, params.password, enc_algo, block_algo, encrypted_data, &encrypted_data_size, 1);
 
     return encrypted_data_size;
@@ -53,6 +58,8 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
     }
 
     encrypt_decrypt(encrypted_data, in_size, param.password, enc_algo, block_algo, decrypted_data, &decrypted_data_size, 0);
+
+    free(encrypted_data);
 
     return decrypted_data_size;
 }
@@ -113,6 +120,8 @@ static int encrypt_decrypt(
     uint32_t* out_size,
     int mode
 ){
+    printf("\n\nEncrypt parameters:\n");
+    printf("In: %p\n in_size: %d\n password: %s\n out: %p\n out_size: %p\n", in, in_size, password, out, out_size);
     uint8_t* k;
     uint8_t* iv;
     size_t out_final_size, out_temporary_size;
@@ -151,7 +160,8 @@ static int encrypt_decrypt(
     }
     printf("out temp size %d\n", out_temporary_size);
     int final_return;
-    printf("Decrypt returns: %d\n", final_return = EVP_CipherFinal(context, out+out_temporary_size, &out_final_size));
+    final_return = EVP_CipherFinal(context, out+out_temporary_size, &out_final_size);
+    printf("Decrypt returns: %d\n", final_return);
     printf("out final size %d\n", out_final_size);
     if(final_return == 0){
         perror("Decryption error in final");

@@ -35,7 +35,7 @@ int reveal(Parameters params){
     
     
     if (params.encrypted){
-        FILE * encrypted_file = fopen("encrypted_file", "rwb");
+        FILE * encrypted_file = fopen("encrypted_file", "w+");
         if (encrypted_file == NULL){
             printf("Error opening out_file");
             exit(1);

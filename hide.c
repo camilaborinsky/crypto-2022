@@ -10,7 +10,7 @@
 #define FILE_EXTENSION_LENGTH 8
 #define INVERTED_BIT 0
 #define SAME_BIT 1
-#define DATA_BUFF_SIZE 1048576  // 1MB
+#define DATA_BUFF_SIZE 1024 * 1024 // 1MB
 
 uint8_t hide_buffer[HIDE_BUFFER_SIZE+1];
 
@@ -19,8 +19,14 @@ int hide(Parameters params){
     char * encrypted_data;
     int encrypted_data_size;
     if (params.encrypted){
-        char * data_to_encrypt = malloc(FILE_SIZE_LENGTH + params.payload->file + strlen(params.payload->extension)+1);
+        char * data_to_encrypt = malloc(FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension)+1);
+        if(data_to_encrypt == NULL){
+            perror("Malloc error in data to encrypt\n");
+        }
         encrypted_data = malloc(DATA_BUFF_SIZE);
+        if(encrypted_data == NULL){
+            perror("Malloc error in encrypted data\n");
+        }
         // Build a char*   payload_size||payload||extension
         // Get payload file size
         uint8_t p_size_string[FILE_SIZE_LENGTH + 1];
@@ -28,9 +34,9 @@ int hide(Parameters params){
 
         strncpy(data_to_encrypt, p_size_string, FILE_SIZE_LENGTH);
         strncpy(data_to_encrypt + FILE_SIZE_LENGTH, params.payload->body, params.payload->size);
-        strcpy(data_to_encrypt + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);       
+        strcpy(data_to_encrypt + FILE_SIZE_LENGTH + params.payload->size, params.payload->extension);   
 
-        encrypted_data_size = encrypt(data_to_encrypt, FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension), params, encrypted_data);
+        encrypted_data_size = encrypt(data_to_encrypt, FILE_SIZE_LENGTH + params.payload->size + strlen(params.payload->extension) + 1, params, encrypted_data);
     
 
     }
@@ -87,6 +93,8 @@ int hide(Parameters params){
 
     steg_function(*params.bmp, data_to_hide, payload_actual_size, params.out_file);
     free(data_to_hide);
+    if (params.encrypted)
+        free(encrypted_data);
     return 0;
 }
 

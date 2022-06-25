@@ -36,3 +36,4 @@ LSBI
 
 LSB1
 ./steg -x -p resources/ladoLSB1aes192cbc.bmp -o resources/extract_lsb1_aes192cbc -s lsb1 -a aes192 -m cbc -k escondite
+./steg -e -p resources/lado.bmp -o resources/embed_lsb1_aes192cbc -s lsb1 -a aes192 -m cbc -k escondite -i resources/itba.png
