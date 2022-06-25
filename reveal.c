@@ -33,20 +33,14 @@ int reveal(Parameters params){
         return -1;
     }
     
-    int encrypted = 0;
-    FILE * encrypted_file;
-    if (params.enc_alg != NULL){
-        encrypted = 1;
-        encrypted_file = fopen("encrypted_file", "w");
+    
+    if (params.encrypted){
+        FILE * encrypted_file = fopen("encrypted_file", "rwb");
         if (encrypted_file == NULL){
             printf("Error opening out_file");
             exit(1);
         }
-    }
-    
-    
-    if (encrypted){
-        steg_function(*params.bmp, encrypted_file, n, encrypted);
+        steg_function(*params.bmp, encrypted_file, n, params.encrypted);
         char * decrypted_data = malloc(DATA_BUFF_SIZE);
         if(decrypted_data == NULL){
             printf("Malloc error\n");
@@ -57,7 +51,7 @@ int reveal(Parameters params){
         // Now separate file_size || body || extension
         separate_decrypted_data(decrypted_data, decrypted_data_size, params.out_file);
     } else {
-        steg_function(*params.bmp, params.out_file, n, encrypted);
+        steg_function(*params.bmp, params.out_file, n, params.encrypted);
     }
     int new_file_name_size = strlen(params.out_file_name)+strlen(extension) +1;
     char new_file_name [new_file_name_size];

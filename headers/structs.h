@@ -60,6 +60,7 @@ typedef struct {
     char* enc_alg;
     char* enc_mode;
     char* password;
+    int encrypted;
 } Parameters;
 
 #endif

@@ -18,6 +18,7 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
         printf("Error in ftell\n");
     }
     size_t in_size = ftell_result;
+    
     fseek(encrypted_file, 0, SEEK_SET);
     // Set body pointer
     char * encrypted_data;
@@ -26,9 +27,10 @@ int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
         printf("Malloc error\n");
         exit(1);
     }
-    fread(encrypted_data, 1, in_size, encrypted_file);
+    fread(encrypted_data, in_size, 1, encrypted_file);
     encrypted_data[in_size] = 0;
     printf("IN size %d\n", in_size);
+    printf("Encrypted data start: %.10x\n", encrypted_data);
 
 
 
@@ -127,7 +129,7 @@ static int encrypt_decrypt(
     }
 
     // Encrypt/Decrypt
-    if(EVP_CipherInit_ex(context, cipher, NULL, k, iv, 0)==0){
+    if(EVP_CipherInit_ex(context, cipher, NULL, k, iv, mode)==0){
         perror("Intialization error");
     }
 

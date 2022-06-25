@@ -36,6 +36,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
         printf("Malloc error\n");
         exit(1);
     }
+    params->encrypted = 0;
     char* opts = "xep:o:i:s:a:m:k:";
     int c;
     static struct option long_options[] =
@@ -98,6 +99,7 @@ Parameters * parse_arguments(int argc, char *argv[]){
                 break;
 
             case 'a':
+                params->encrypted = 1;
                 params->enc_alg = optarg;
                 break;
 
