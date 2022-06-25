@@ -8,6 +8,16 @@ const char* block_chaining_type_names[BLOCK_CHAINING_TYPE_NUMBER] = {"ecb", "cfb
 const int block_chaining_type_name_size[BLOCK_CHAINING_TYPE_NUMBER] = {3, 3, 3, 3};
 
 
+int encrypt(char * payload, size_t payload_size, Parameters params, char * encrypted_data){
+    enum crypto_algorithm enc_algo = get_encryption_algorithm((char *)params.enc_alg);
+    enum crypto_block_algorithm block_algo = get_block_algorithm((char *)params.enc_mode);
+    size_t encrypted_data_size;
+
+    encrypt_decrypt(payload, payload_size, params.password, enc_algo, block_algo, encrypted_data, &encrypted_data_size, 1);
+
+    return encrypted_data_size;
+}
+
 int decrypt(FILE* encrypted_file, Parameters param, char * decrypted_data){
     // Levantar de archivo y poner en un buffer
     if (fseek(encrypted_file, 0, SEEK_END) != 0){

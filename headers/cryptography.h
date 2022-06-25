@@ -39,6 +39,7 @@ static const EVP_CIPHER* get_cipher(
 );
 
 int decrypt(FILE* encrypted_file, Parameters params, char * decrypted_data);
+int encrypt(char * payload, size_t payload_size, Parameters params, char * encrypted_data);
 
 enum crypto_algorithm get_encryption_algorithm(char * algorithm);
 enum crypto_block_algorithm get_block_algorithm(char * algorithm);
