@@ -72,7 +72,7 @@ En el caso de ocultar/revelar un contenido encriptado la convención que seguimo
     Para este punto aplicamos los tres algoritmos ocultando la imagen .png del logo del itba dentro del archivo .bmp llamado lado.bmp entregado por la cátedra.
 
     Presentamos el siguiente cuadro comparativo:<br>
-    | Algoritmo |Calidad del ocultamiento | Tamaño necesario del portador | Bits modificados | Tiempo de ocultamiento |
+    | Algoritmo |Calidad del ocultamiento | Tamaño necesario del portador | Bits modificados en un ejemplo | Tiempo de ocultamiento |
     |-----------|-------------------------|-------------------------------|------------------|----|
     | lsb1 | Muy buena, indistinguible a nuestro ojo al solo modificar el LS bit | Grande. 8 veces el tamaño del payload | 190182 | Orden n. 1 pasada por original escondiendo payload |
     | lsb4 | Sigue siendo indistinguible al ojo humanos pero bastante menor la calidad al modificar 4 bits del pixel original | Chico. Solo 2 veces el tamaño del payload | 205965 | Orden n. 1 pasada por original escondiendo payload |
@@ -99,8 +99,7 @@ xxd loimposible.bmp | tail -n 10
 <br>
 Como el único png que habíamos obtenido era el del buscaminas, le cambiamos la extensión a una copia de este archivo y extrajimos el zip y obtuvimos el algoritmo y modo de encripción: AES 256 con ECB (en la pregunta 4 explicamos cómo).
 
-No nos está funcionando la desencripción para este archivo aunque sí para los archivos de prueba presentes en campus.
-Lo que hicimos entonces fue pedirle su archivo .wmv a un grupo que sí le funciónó para poder responder a la pregunta 5.
+Sabiendo ahora el algoritmo, modo de encripción y password pudimos, utilizando lsb1, extraer del archivo sherlock.bmp un archivo .wmv que contenía un video con unas escenas de una serie/película en la que se presenta un método de ocultar información en un tejido.
 
 4. Algunos mensajes ocultos tenían, a su vez, otros mensajes ocultos. Indica cuál era ese
    mensaje y cómo se había ocultado.
@@ -134,12 +133,9 @@ Lo que hicimos entonces fue pedirle su archivo .wmv a un grupo que sí le funci�
    una manera de ocultar información ¿qué se ocultaba según el video y sobre qué
    portador?
 
-   Aunque pudimos desencriptar los archivos de prueba subidos al campus por la cátedra, tuvimos problemas al desencriptar sherlock.bmp con las pistas recopiladas de los demás archivos.
-   Lo que hicimos fue pedirle su archivo .wmv a otro grupo que no tuvo este problema para poder aunque sea responder esta pregunta. Se lo pedimos al grupo n° 4.
+   En el video se presenta una manera de ocultar información utilizando como portador un tejido. El método consiste en tejer de forma que si dejamos un hilo vertical encima del horizontal que lo atraviesa se interpreta como un 1, si lo dejamos por debajo, como un 0. De esta forma se puede ocultar información de forma binaria sobre un tejido, portador bastante inesperado. En la escena del video lo que se esconde es un nombre.
+   Nos parece que este método de ocultamiento hace que sea increíblemente difícil detectar que el objeto contiene un mensaje oculto para quien no conoce el método. De todas formas, es un método que conlleva un proceso de encripción muy lento al tener que realizar un tejido, a su vez que la desencripción tampoco es demasiado veloz al tener que analizar cada cruzamiento de hilos e ir anotando a mano los 1s y 0s. Obviando además que requiere que al destinatario se le haga entrega de un objeto físico, lo cual no es ideal si no sabemos quién es para enviarlo, dónde está físicamente o si está muy lejos.
 
-   En el video se ve una escena de una serie en la cual dos agentes están analizando un email. Observan que el archivo es más grande de lo que debería ser y en un primer momento creen que es un error de compresión. Luego uno de los agentes señala que es probable que el archivo tenga información oculta.
-
-   El archivo portador sería un email común y corriente, y los datos ocultos información que otra persona escondió en él. Esto se podría lograr con un método diferente a los LSB implementados por nosotros pues ellos no cambian el tamaño del archivo portador, sino sólo su contenido. La información se debe haber ocultado en alguna sección del documento que no provoque cambios visuales considerables en el archivo pues no se notó hasta que vieron el tamaño del mismo.
 
 6. ¿De qué se trató el método de estenografiado que no era LSB1 ni LSB4 ni LSBI? ¿Es un
    método eficaz? ¿Por qué?

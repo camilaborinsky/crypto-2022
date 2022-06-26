@@ -72,6 +72,6 @@ make all
 ### Para extraer archivos con contenido encriptado
 
 ```
-./steg -x -p resources/ladoLSBI.bmp -o resources/extract_lsbi -s lsbi -a aes192 -m cbc -k escondite
-./steg --extract -p resources/ladoLSBI.bmp --out resources/extract_lsbi --steg lsbi -a aes192 -m cbc --pass escondite
+./steg -x -p resources/ladoLSB1aes192cbc.bmp -o resources/extract_lsb1_aes -s lsb1 -a aes192 -m cbc -k escondite
+./steg --extract -p resources/ladoLSB1aes192cbc.bmp --out resources/extract_lsb1_aes --steg lsb1 -a aes192 -m cbc --pass escondite
 ```
